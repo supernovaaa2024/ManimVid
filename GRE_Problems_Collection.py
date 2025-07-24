@@ -656,3 +656,81 @@ class HeightStatistics(Scene):
 # - Faster pacing and shorter wait times
 # - Centered content for vertical format
 # - Bold, eye-catching visual elements
+
+
+# --- Exponential Likelihood Ratio Test Animation ---
+class ExponentialLikelihoodRatioTest(Scene):
+    def construct(self):
+        # Title
+        title = Text("Likelihood Ratio Test", font_size=48, weight=BOLD)
+        subtitle = Text("Exponential Distribution", font_size=36, color=YELLOW)
+        title_group = VGroup(title, subtitle).arrange(DOWN, buff=0.2)
+        title_group.to_edge(UP, buff=0.5)
+        self.play(Write(title), Write(subtitle), run_time=1)
+        self.wait(0.5)
+
+        # Problem statement
+        problem = VGroup(
+            Text("Let X₁, ..., Xₙ ~ Exp(θ)", font_size=32, color=WHITE),
+            MathTex(r"f(x|\theta) = \theta e^{-\theta x}", font_size=36, color=BLUE),
+            Text("Test H₀: θ = θ₀ vs H₁: θ ≠ θ₀", font_size=32, color=YELLOW),
+            Text("Show rejection region: ", font_size=28, color=WHITE),
+            MathTex(r"\overline{X} e^{-\theta_0 \overline{X}} \leq c", font_size=36, color=GREEN)
+        ).arrange(DOWN, buff=0.3)
+        problem.next_to(title_group, DOWN, buff=0.7)
+        self.play(FadeIn(problem), run_time=1.2)
+        self.wait(1)
+
+        # Likelihood function
+        lik = MathTex(r"\text{Lik}(\theta) = \theta^n e^{-\theta \sum x_i}", font_size=36)
+        lik.next_to(problem, DOWN, buff=0.8)
+        self.play(Write(lik), run_time=1)
+        self.wait(0.7)
+
+        # Plug in θ₀ and θ₁ (MLE)
+        lik_theta0 = MathTex(r"\text{Lik}(\theta_0) = \theta_0^n e^{-\theta_0 \sum x_i}", font_size=34)
+        lik_theta1 = MathTex(r"\text{Lik}(\theta_1) = \theta_1^n e^{-\theta_1 \sum x_i}", font_size=34)
+        lik_theta0.next_to(lik, DOWN, buff=0.5)
+        lik_theta1.next_to(lik_theta0, DOWN, buff=0.3)
+        self.play(Write(lik_theta0), Write(lik_theta1), run_time=1.2)
+        self.wait(0.7)
+
+        # Likelihood ratio
+        ratio = MathTex(r"\Lambda = \frac{\text{Lik}(\theta_0)}{\text{Lik}(\theta_1)}", font_size=38, color=YELLOW)
+        ratio.next_to(lik_theta1, DOWN, buff=0.7)
+        self.play(Write(ratio), run_time=0.8)
+        self.wait(0.5)
+
+        # Substitute and simplify
+        step1 = MathTex(r"= \frac{\theta_0^n e^{-\theta_0 \sum x_i}}{\theta_1^n e^{-\theta_1 \sum x_i}}", font_size=36)
+        step2 = MathTex(r"= \left( \frac{\theta_0}{\theta_1} \right)^n e^{-(\theta_0-\theta_1)\sum x_i}", font_size=36)
+        step1.next_to(ratio, DOWN, buff=0.5)
+        step2.next_to(step1, DOWN, buff=0.3)
+        self.play(Write(step1), run_time=0.7)
+        self.play(Write(step2), run_time=0.7)
+        self.wait(0.7)
+
+        # Use MLE: θ₁ = 1/\overline{X}, \sum x_i = n \overline{X}
+        mle = MathTex(r"\theta_1 = \frac{1}{\overline{X}},\ \sum x_i = n\overline{X}", font_size=32, color=BLUE)
+        mle.next_to(step2, DOWN, buff=0.5)
+        self.play(Write(mle), run_time=0.7)
+        self.wait(0.5)
+
+        # Substitute MLE into ratio
+        step3 = MathTex(r"= (\theta_0 \overline{X})^n e^{n(1-\theta_0 \overline{X})}", font_size=36, color=GREEN)
+        step3.next_to(mle, DOWN, buff=0.5)
+        self.play(Write(step3), run_time=0.8)
+        self.wait(0.7)
+
+        # Rejection region
+        reject = MathTex(r"(\overline{X} e^{-\theta_0 \overline{X}})^n \leq c_1", font_size=38, color=YELLOW)
+        reject.next_to(step3, DOWN, buff=0.7)
+        self.play(Write(reject), run_time=0.8)
+        self.wait(0.7)
+
+        # Final boxed region
+        final = MathTex(r"\overline{X} e^{-\theta_0 \overline{X}} \leq c", font_size=48, color=RED)
+        final.next_to(reject, DOWN, buff=0.8)
+        box = SurroundingRectangle(final, color=RED, buff=0.3)
+        self.play(Write(final), Create(box), run_time=1)
+        self.wait(1.5)
