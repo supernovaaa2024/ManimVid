@@ -658,79 +658,173 @@ class HeightStatistics(Scene):
 # - Bold, eye-catching visual elements
 
 
-# --- Exponential Likelihood Ratio Test Animation ---
-class ExponentialLikelihoodRatioTest(Scene):
+class GREProblemSolve(Scene):
     def construct(self):
         # Title
-        title = Text("Likelihood Ratio Test", font_size=48, weight=BOLD)
-        subtitle = Text("Exponential Distribution", font_size=36, color=YELLOW)
-        title_group = VGroup(title, subtitle).arrange(DOWN, buff=0.2)
-        title_group.to_edge(UP, buff=0.5)
-        self.play(Write(title), Write(subtitle), run_time=1)
-        self.wait(0.5)
+        title = Text("GRE Problem: Factors and Powers", font_size=36)
+        self.play(Write(title))
+        self.wait(1)
+        self.play(title.animate.to_edge(UP))
 
-        # Problem statement
-        problem = VGroup(
-            Text("Let X₁, ..., Xₙ ~ Exp(θ)", font_size=32, color=WHITE),
-            MathTex(r"f(x|\theta) = \theta e^{-\theta x}", font_size=36, color=BLUE),
-            Text("Test H₀: θ = θ₀ vs H₁: θ ≠ θ₀", font_size=32, color=YELLOW),
-            Text("Show rejection region: ", font_size=28, color=WHITE),
-            MathTex(r"\overline{X} e^{-\theta_0 \overline{X}} \leq c", font_size=36, color=GREEN)
-        ).arrange(DOWN, buff=0.3)
-        problem.next_to(title_group, DOWN, buff=0.7)
-        self.play(FadeIn(problem), run_time=1.2)
+        # Problem Statement
+        problem_mathtex_lines = [
+            r"\text{Let } a \text{ be the greatest integer such that } 5^a \text{ is a factor of } 1,500,",
+            r"\text{and let } b \text{ be the greatest integer such that } 3^b \text{ is a factor of } 33,333,333.",
+            r"\text{Which of the following statements are true?}",
+            r"\text{Indicate all such statements.}"
+        ]
+        problem_mobjects = VGroup(*[MathTex(line, font_size=24, color=BLUE) for line in problem_mathtex_lines]).arrange(DOWN, aligned_edge=LEFT, buff=0.22)
+        problem_mobjects.next_to(title, DOWN, buff=2)
+        self.play(Write(problem_mobjects))
+        self.wait(2)
+
+        options_text = VGroup(
+            MathTex("A.  ab = 3", font_size=34),
+            MathTex("B.  a = 3b", font_size=34),
+            MathTex("C.  2a > 5b", font_size=34)
+        ).arrange(DOWN, buff=0.18)
+        options_text.next_to(problem_mobjects, DOWN, buff=0.25)
+        options_text.move_to(ORIGIN).shift(DOWN*0.5)
+        self.play(Write(options_text))
+        self.wait(3)
+
+        # Clear problem statement for calculation space
+        self.play(FadeOut(problem_mobjects), FadeOut(options_text))
+
+        # --- Solve for 'a' ---
+        solve_a_title = Text("Step 1: Solve for 'a'", font_size=30, color=YELLOW)
+        solve_a_title.to_edge(UP).shift(DOWN*0.2) # Adjusted position
+        self.play(Transform(title, solve_a_title))
+        
+        text_a_def = MathTex(r"\text{Find the greatest integer 'a' such that } 5^a \text{ is a factor of 1,500.}", font_size=28)
+        text_a_def.next_to(title, DOWN, buff=0.4)
+        self.play(Write(text_a_def))
         self.wait(1)
 
-        # Likelihood function
-        lik = MathTex(r"\text{Lik}(\theta) = \theta^n e^{-\theta \sum x_i}", font_size=36)
-        lik.next_to(problem, DOWN, buff=0.8)
-        self.play(Write(lik), run_time=1)
-        self.wait(0.7)
+        factor_1500_steps = VGroup(
+            MathTex(r"1500 = 15 \times 100"),
+            MathTex(r"= (3 \times 5) \times 10^2"),
+            MathTex(r"= 3 \times 5 \times (2 \times 5)^2"),
+            MathTex(r"= 3 \times 5 \times 2^2 \times 5^2"),
+            MathTex(r"= 2^2 \times 3^1 \times 5^3")
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.25).scale(0.9)
+        factor_1500_steps.next_to(text_a_def, DOWN, buff=0.3)
+        
+        for i, step in enumerate(factor_1500_steps):
+            self.play(Write(step))
+            self.wait(1 if i < len(factor_1500_steps) -1 else 2)
 
-        # Plug in θ₀ and θ₁ (MLE)
-        lik_theta0 = MathTex(r"\text{Lik}(\theta_0) = \theta_0^n e^{-\theta_0 \sum x_i}", font_size=34)
-        lik_theta1 = MathTex(r"\text{Lik}(\theta_1) = \theta_1^n e^{-\theta_1 \sum x_i}", font_size=34)
-        lik_theta0.next_to(lik, DOWN, buff=0.5)
-        lik_theta1.next_to(lik_theta0, DOWN, buff=0.3)
-        self.play(Write(lik_theta0), Write(lik_theta1), run_time=1.2)
-        self.wait(0.7)
+        highlight_5_3 = SurroundingRectangle(factor_1500_steps[-1].get_parts_by_tex("5^3"), color=GREEN, buff=0.1)
+        text_a_val_explain = MathTex(r"\text{The highest power of 5 is } 5^3.", font_size=28).next_to(factor_1500_steps, DOWN, buff=0.3)
+        self.play(Create(highlight_5_3), Write(text_a_val_explain))
+        self.wait(1)
+        
+        a_value = MathTex(r"a = 3", font_size=32, color=GREEN)
+        a_value.next_to(text_a_val_explain, DOWN, buff=0.3)
+        self.play(Write(a_value))
+        self.wait(2)
 
-        # Likelihood ratio
-        ratio = MathTex(r"\Lambda = \frac{\text{Lik}(\theta_0)}{\text{Lik}(\theta_1)}", font_size=38, color=YELLOW)
-        ratio.next_to(lik_theta1, DOWN, buff=0.7)
-        self.play(Write(ratio), run_time=0.8)
-        self.wait(0.5)
+        # Group objects for 'a' to fade them out together
+        group_a_calc = VGroup(text_a_def, factor_1500_steps, highlight_5_3, text_a_val_explain)
+        self.play(FadeOut(group_a_calc))
+        
+        # --- Solve for 'b' ---
+        solve_b_title = Text("Step 2: Solve for 'b'", font_size=30, color=YELLOW)
+        solve_b_title.to_edge(UP).shift(DOWN*0.2) # Adjusted position
+        self.play(Transform(title, solve_b_title))
+        
+        a_value_on_screen = a_value.copy() # Keep a_value displayed
+        a_value_on_screen.generate_target()
+        a_value_on_screen.target.scale(0.8).to_corner(UP + LEFT, buff=0.5)
+        self.play(MoveToTarget(a_value_on_screen))
 
-        # Substitute and simplify
-        step1 = MathTex(r"= \frac{\theta_0^n e^{-\theta_0 \sum x_i}}{\theta_1^n e^{-\theta_1 \sum x_i}}", font_size=36)
-        step2 = MathTex(r"= \left( \frac{\theta_0}{\theta_1} \right)^n e^{-(\theta_0-\theta_1)\sum x_i}", font_size=36)
-        step1.next_to(ratio, DOWN, buff=0.5)
-        step2.next_to(step1, DOWN, buff=0.3)
-        self.play(Write(step1), run_time=0.7)
-        self.play(Write(step2), run_time=0.7)
-        self.wait(0.7)
 
-        # Use MLE: θ₁ = 1/\overline{X}, \sum x_i = n \overline{X}
-        mle = MathTex(r"\theta_1 = \frac{1}{\overline{X}},\ \sum x_i = n\overline{X}", font_size=32, color=BLUE)
-        mle.next_to(step2, DOWN, buff=0.5)
-        self.play(Write(mle), run_time=0.7)
-        self.wait(0.5)
+        text_b_def = MathTex(r"\text{Find the greatest integer 'b' such that } 3^b \text{ is a factor of 33,333,333.}", font_size=28)
+        text_b_def.next_to(title, DOWN, buff=0.4)
+        self.play(Write(text_b_def))
+        self.wait(1)
 
-        # Substitute MLE into ratio
-        step3 = MathTex(r"= (\theta_0 \overline{X})^n e^{n(1-\theta_0 \overline{X})}", font_size=36, color=GREEN)
-        step3.next_to(mle, DOWN, buff=0.5)
-        self.play(Write(step3), run_time=0.8)
-        self.wait(0.7)
+        factor_33m_step1 = MathTex(r"33,333,333 = 3 \times 11,111,111", font_size=32)
+        factor_33m_step1.next_to(text_b_def, DOWN, buff=0.3)
+        self.play(Write(factor_33m_step1))
+        self.wait(2)
 
-        # Rejection region
-        reject = MathTex(r"(\overline{X} e^{-\theta_0 \overline{X}})^n \leq c_1", font_size=38, color=YELLOW)
-        reject.next_to(step3, DOWN, buff=0.7)
-        self.play(Write(reject), run_time=0.8)
-        self.wait(0.7)
-
-        # Final boxed region
-        final = MathTex(r"\overline{X} e^{-\theta_0 \overline{X}} \leq c", font_size=48, color=RED)
-        final.next_to(reject, DOWN, buff=0.8)
-        box = SurroundingRectangle(final, color=RED, buff=0.3)
-        self.play(Write(final), Create(box), run_time=1)
+        sum_digits_11m = MathTex(r"\text{For } 11,111,111: \text{ sum of digits} = 1+1+1+1+1+1+1+1 = 8", font_size=28)
+        sum_digits_11m.next_to(factor_33m_step1, DOWN, buff=0.3)
+        self.play(Write(sum_digits_11m))
         self.wait(1.5)
+        
+        div_by_3_check = MathTex(r"8 \text{ is not divisible by 3, so } 11,111,111 \text{ is not divisible by 3.}", font_size=28)
+        div_by_3_check.next_to(sum_digits_11m, DOWN, buff=0.3)
+        self.play(Write(div_by_3_check))
+        self.wait(2)
+
+        text_b_val_explain = MathTex(r"\text{So, the highest power of 3 in } 33,333,333 \text{ is } 3^1.", font_size=28).next_to(div_by_3_check, DOWN, buff=0.3)
+        self.play(Write(text_b_val_explain))
+        self.wait(1)
+
+        b_value = MathTex(r"b = 1", font_size=32, color=GREEN)
+        b_value.next_to(text_b_val_explain, DOWN, buff=0.3)
+        self.play(Write(b_value))
+        self.wait(2)
+        
+        b_value_on_screen = b_value.copy() # Keep b_value displayed
+        b_value_on_screen.generate_target()
+        b_value_on_screen.target.scale(0.8).next_to(a_value_on_screen, RIGHT, buff=0.5)
+        self.play(MoveToTarget(b_value_on_screen))
+
+        group_b_calc = VGroup(text_b_def, factor_33m_step1, sum_digits_11m, div_by_3_check, text_b_val_explain)
+        self.play(FadeOut(group_b_calc))
+
+        # --- Evaluate Statements ---
+        eval_title = Text("Step 3: Evaluate Statements", font_size=30, color=YELLOW)
+        eval_title.to_edge(UP, buff=1)
+        self.play(Transform(title, eval_title))
+
+        # Display a=3 and b=1 clearly
+        current_values_display = VGroup(
+            MathTex(r"a = 3", font_size=24, color=GREEN),
+            MathTex(r"b = 1", font_size=24, color=GREEN)
+        ).arrange(RIGHT, buff=1.2)
+
+        # All statement lines as MathTex, smaller font, grouped for layout
+        st_A = MathTex(r"\text{A. } a \cdot b = 3", font_size=22)
+        st_A_eval = MathTex(r"3 \cdot 1 = 3", font_size=22)
+        st_A_res = MathTex(r"3 = 3 \quad (\text{TRUE})", font_size=22, color=GREEN)
+        st_B = MathTex(r"\text{B. } a = 3b", font_size=22)
+        st_B_eval = MathTex(r"3 = 3 \cdot 1", font_size=22)
+        st_B_res = MathTex(r"3 = 3 \quad (\text{TRUE})", font_size=22, color=GREEN)
+        st_C = MathTex(r"\text{C. } 2a > 5b", font_size=22)
+        st_C_eval = MathTex(r"2 \cdot 3 > 5 \cdot 1", font_size=22)
+        st_C_res = MathTex(r"6 > 5 \quad (\text{TRUE})", font_size=22, color=GREEN)
+
+        # Arrange each statement in a row
+        row_A = VGroup(st_A, st_A_eval, st_A_res).arrange(RIGHT, buff=0.5, aligned_edge=DOWN)
+        row_B = VGroup(st_B, st_B_eval, st_B_res).arrange(RIGHT, buff=0.5, aligned_edge=DOWN)
+        row_C = VGroup(st_C, st_C_eval, st_C_res).arrange(RIGHT, buff=0.5, aligned_edge=DOWN)
+
+        # Stack all rows and values
+        statements_group = VGroup(current_values_display, row_A, row_B, row_C).arrange(DOWN, buff=0.25, aligned_edge=LEFT)
+        statements_group.next_to(title, DOWN, buff=0.4)
+        self.play(FadeOut(a_value_on_screen), FadeOut(b_value_on_screen), Write(statements_group))
+        self.wait(2)
+
+        # --- Conclusion ---
+        conclusion_title = Text("Conclusion", font_size=30, color=YELLOW)
+        conclusion_title.to_edge(UP, buff=0.5)
+        self.play(Transform(title, conclusion_title))
+
+        final_answer_text = Text("All statements A, B, and C are true.", font_size=28, color=BLUE)
+        final_answer_text.next_to(title, DOWN, buff=0.5)
+
+        # Fade out the old statements group before showing the conclusion
+        self.play(FadeOut(statements_group))
+        self.wait(0.2)
+
+        # Only show the conclusion text, centered
+        final_answer_text.move_to(ORIGIN)
+        self.play(Write(final_answer_text))
+        self.wait(2.5)
+
+# manim -pqh Stats.py GREProblemSolve
+# manim -pql Stats.py GREProblemSolve
