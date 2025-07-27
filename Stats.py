@@ -1,6 +1,8 @@
 
 from manim import *
 
+import numpy as np
+
 # Instagram Reels configuration - 9:16 aspect ratio
 config.pixel_height = 1920
 config.pixel_width = 1080
@@ -8,6 +10,837 @@ config.frame_height = 16.0
 config.frame_width = 9.0
 
 
+class CoinFlipHypothesisTest(Scene):
+    PRIMARY_COLOR = "#FF6B6B"
+    SECONDARY_COLOR = "#4ECDC4"
+    ACCENT_COLOR = "#45B7D1"
+    SUCCESS_COLOR = "#98D8C8"
+    WARNING_COLOR = "#FFD93D"
+    REJECT_COLOR = "#FF4757"
+    TEXT_COLOR = WHITE
+
+    def construct(self):
+        # Set up vertical format for Instagram reels
+        self.camera.frame_width = 9
+        self.camera.frame_height = 16
+        
+        # Main title
+        main_title = Text("Hypothesis Testing", font_size=48, color=self.PRIMARY_COLOR, weight=BOLD)
+        main_title.to_edge(UP, buff=0.8)
+
+        self.play(Write(main_title), run_time=1.5)
+
+        # Problem statement
+        problem_title = Text("Problem 1", font_size=36, color=self.SECONDARY_COLOR, weight=BOLD)
+        problem_title.next_to(main_title, DOWN, buff=0.5)
+
+        self.play(Write(problem_title), run_time=1)
+
+        # Problem setup
+        setup_text = Text("Coin thrown 10 times independently", font_size=28, color=self.TEXT_COLOR)
+        setup_text.next_to(problem_title, DOWN, buff=0.6)
+
+        self.play(Write(setup_text), run_time=1.5)
+
+        # Hypotheses
+        hypothesis_h0 = MathTex(
+            r"H_0: p = \frac{1}{2}",
+            font_size=32,
+            color=self.ACCENT_COLOR
+        )
+        hypothesis_h1 = MathTex(
+            r"H_1: p \neq \frac{1}{2}",
+            font_size=32,
+            color=self.ACCENT_COLOR
+        )
+
+        hypotheses_group = VGroup(hypothesis_h0, hypothesis_h1).arrange(RIGHT, buff=1.5)
+        hypotheses_group.next_to(setup_text, DOWN, buff=0.6)
+
+        self.play(Write(hypothesis_h0), run_time=1.5)
+        self.play(Write(hypothesis_h1), run_time=1.5)
+
+        # Rejection rule
+        rejection_text = Text("Reject H₀ if 0 or 10 heads observed", font_size=26, color=self.REJECT_COLOR)
+        rejection_text.next_to(hypotheses_group, DOWN, buff=0.6)
+
+        self.play(Write(rejection_text), run_time=1.5)
+        self.wait(1)
+
+        # Questions
+        questions = [
+            "a. What is the significance level?",
+            "b. If p = 0.1, what is the power?"
+        ]
+
+        question_objects = []
+        for i, q in enumerate(questions):
+            q_text = Text(q, font_size=28, color=self.TEXT_COLOR)
+            question_objects.append(q_text)
+
+        questions_group = VGroup(*question_objects).arrange(DOWN, buff=0.5, aligned_edge=LEFT)
+        questions_group.next_to(rejection_text, DOWN, buff=0.8)
+
+        for q in question_objects:
+            self.play(Write(q), run_time=1.2)
+
+        self.wait(2)
+
+        # Clear screen for solutions
+        self.play(FadeOut(VGroup(setup_text, hypotheses_group, rejection_text, questions_group)), run_time=1)
+
+        # Solution Part A: Significance Level
+        self.solve_part_a(main_title, problem_title)
+
+        # Solution Part B: Power
+        self.solve_part_b(main_title, problem_title)
+
+        # Final summary
+        self.show_summary(main_title)
+
+    def solve_part_a(self, main_title, problem_title):
+        # Part A title
+        part_a_title = Text("Part A: Significance Level (α)", font_size=36, color=self.PRIMARY_COLOR, weight=BOLD)
+        part_a_title.next_to(problem_title, DOWN, buff=0.8)
+        
+        self.play(Write(part_a_title), run_time=1.5)
+        
+        # Definition of significance level
+        alpha_def = MathTex(
+            r"\alpha = P(\text{rejecting } H_0 | H_0 \text{ is true})",
+            font_size=28,
+            color=self.ACCENT_COLOR
+        )
+        alpha_def.next_to(part_a_title, DOWN, buff=0.6)
+        
+        self.play(Write(alpha_def), run_time=2)
+        
+        # Breaking it down
+        breakdown = MathTex(
+            r"= P(0 \text{ heads} | H_0) + P(10 \text{ heads} | H_0)",
+            font_size=26,
+            color=self.TEXT_COLOR
+        )
+        breakdown.next_to(alpha_def, DOWN, buff=0.5)
+        
+        self.play(Write(breakdown), run_time=1.8)
+        
+        # Binomial calculation
+        binomial_calc = MathTex(
+            r"= \binom{10}{0}\left(\frac{1}{2}\right)^{10} + \binom{10}{10}\left(\frac{1}{2}\right)^{10}",
+            font_size=24,
+            color=self.TEXT_COLOR
+        )
+        binomial_calc.next_to(breakdown, DOWN, buff=0.5)
+        
+        self.play(Write(binomial_calc), run_time=2.5)
+        
+        # Simplification
+        simplification = MathTex(
+            r"= \left(\frac{1}{2}\right)^{10} + \left(\frac{1}{2}\right)^{10} = 2\left(\frac{1}{2}\right)^{10}",
+            font_size=26,
+            color=self.TEXT_COLOR
+        )
+        simplification.next_to(binomial_calc, DOWN, buff=0.5)
+        
+        self.play(Write(simplification), run_time=2)
+        
+        # Final calculation
+        final_calc = MathTex(
+            r"= \left(\frac{1}{2}\right)^9 = \frac{1}{512} \approx 0.00195",
+            font_size=28,
+            color=self.TEXT_COLOR
+        )
+        final_calc.next_to(simplification, DOWN, buff=0.5)
+        
+        self.play(Write(final_calc), run_time=2)
+        
+        # Final result for part A
+        result_a = MathTex(
+            r"\alpha = 0.00195",
+            font_size=36,
+            color=self.SUCCESS_COLOR
+        )
+        result_a.next_to(final_calc, DOWN, buff=0.6)
+        
+        result_box_a = SurroundingRectangle(
+            result_a, 
+            color=self.SUCCESS_COLOR, 
+            buff=0.3,
+            corner_radius=0.2
+        )
+        
+        self.play(Write(result_a), run_time=2)
+        self.play(Create(result_box_a), run_time=1)
+        self.wait(1.5)
+        
+        # Clear for next part
+        self.play(FadeOut(VGroup(part_a_title, alpha_def, breakdown, binomial_calc, 
+                                simplification, final_calc, result_a, result_box_a)), run_time=1)
+
+    def solve_part_b(self, main_title, problem_title):
+        # Part B title
+        part_b_title = Text("Part B: Power (when p = 0.1)", font_size=36, color=self.PRIMARY_COLOR, weight=BOLD)
+        part_b_title.next_to(problem_title, DOWN, buff=0.8)
+        
+        self.play(Write(part_b_title), run_time=1.5)
+        
+        # Definition of power
+        power_def = MathTex(
+            r"\text{Power} = 1 - \beta = P(\text{reject } H_0 | H_1 \text{ is true})",
+            font_size=26,
+            color=self.ACCENT_COLOR
+        )
+        power_def.next_to(part_b_title, DOWN, buff=0.6)
+        
+        self.play(Write(power_def), run_time=2)
+        
+        # Concept explanation
+        concept_text = Text("β = False negative, Power = True positive", font_size=24, color=self.SECONDARY_COLOR)
+        concept_text.next_to(power_def, DOWN, buff=0.4)
+        
+        self.play(Write(concept_text), run_time=1.5)
+        
+        # Breaking down the power calculation
+        power_breakdown = MathTex(
+            r"= P(0 \text{ heads} | p=0.1) + P(10 \text{ heads} | p=0.1)",
+            font_size=26,
+            color=self.TEXT_COLOR
+        )
+        power_breakdown.next_to(concept_text, DOWN, buff=0.5)
+        
+        self.play(Write(power_breakdown), run_time=1.8)
+        
+        # Binomial calculation with p = 0.1
+        binomial_calc_b = MathTex(
+            r"= \binom{10}{0}(0.1)^0(0.9)^{10} + \binom{10}{10}(0.1)^{10}(0.9)^0",
+            font_size=22,
+            color=self.TEXT_COLOR
+        )
+        binomial_calc_b.next_to(power_breakdown, DOWN, buff=0.5)
+        
+        self.play(Write(binomial_calc_b), run_time=2.5)
+        
+        # Simplification
+        simplification_b = MathTex(
+            r"= (0.9)^{10} + (0.1)^{10}",
+            font_size=28,
+            color=self.TEXT_COLOR
+        )
+        simplification_b.next_to(binomial_calc_b, DOWN, buff=0.5)
+        
+        self.play(Write(simplification_b), run_time=2)
+        
+        # Numerical calculation
+        numerical_calc = MathTex(
+            r"= 0.3487 + 0.0000000001 \approx 0.3487",
+            font_size=26,
+            color=self.TEXT_COLOR
+        )
+        numerical_calc.next_to(simplification_b, DOWN, buff=0.5)
+        
+        self.play(Write(numerical_calc), run_time=2)
+        
+        # Final result for part B
+        result_b = MathTex(
+            r"\text{Power} = 0.3487",
+            font_size=36,
+            color=self.SUCCESS_COLOR
+        )
+        result_b.next_to(numerical_calc, DOWN, buff=0.6)
+        
+        result_box_b = SurroundingRectangle(
+            result_b, 
+            color=self.SUCCESS_COLOR, 
+            buff=0.3,
+            corner_radius=0.2
+        )
+        
+        self.play(Write(result_b), run_time=2)
+        self.play(Create(result_box_b), run_time=1)
+        self.wait(1.5)
+        
+        # Clear for summary
+        self.play(FadeOut(VGroup(part_b_title, power_def, concept_text, power_breakdown, 
+                                binomial_calc_b, simplification_b, numerical_calc, result_b, result_box_b)), run_time=1)
+
+    def show_summary(self, main_title):
+        # Summary title
+        summary_title = Text("Summary", font_size=42, color=self.PRIMARY_COLOR, weight=BOLD)
+        summary_title.next_to(main_title, DOWN, buff=1)
+        
+        self.play(Write(summary_title), run_time=1.5)
+        
+        # Hypothesis testing visual
+        hypothesis_visual = VGroup(
+            MathTex(r"H_0: p = \frac{1}{2}", font_size=28, color=self.ACCENT_COLOR),
+            MathTex(r"H_1: p \neq \frac{1}{2}", font_size=28, color=self.ACCENT_COLOR)
+        ).arrange(RIGHT, buff=1)
+        hypothesis_visual.next_to(summary_title, DOWN, buff=0.6)
+        
+        self.play(Write(hypothesis_visual), run_time=1.5)
+        
+        # Rejection rule
+        rejection_rule = Text("Reject if 0 or 10 heads", font_size=26, color=self.REJECT_COLOR)
+        rejection_rule.next_to(hypothesis_visual, DOWN, buff=0.5)
+        
+        self.play(Write(rejection_rule), run_time=1.2)
+        
+        # Results
+        results = [
+            (r"a) \text{ Significance Level: } \alpha = 0.00195", self.PRIMARY_COLOR),
+            (r"b) \text{ Power (p=0.1): } 0.3487", self.SECONDARY_COLOR)
+        ]
+        
+        result_objects = []
+        for i, (result, color) in enumerate(results):
+            result_math = MathTex(result, font_size=30, color=color)
+            result_objects.append(result_math)
+        
+        results_group = VGroup(*result_objects).arrange(DOWN, buff=0.8)
+        results_group.next_to(rejection_rule, DOWN, buff=0.8)
+        
+        # Animate each result
+        for result in result_objects:
+            self.play(Write(result), run_time=1.5)
+            self.wait(0.5)
+        
+        # Add interpretation
+        interpretation = Text("Very low α (strict test), moderate power", 
+                            font_size=24, color=self.WARNING_COLOR)
+        interpretation.next_to(results_group, DOWN, buff=0.6)
+        
+        self.play(Write(interpretation), run_time=1.5)
+        
+        # Final emphasis box
+        final_box = SurroundingRectangle(
+            VGroup(results_group, interpretation), 
+            color=self.WARNING_COLOR, 
+            buff=0.4,
+            corner_radius=0.3,
+            stroke_width=3
+        )
+        
+        self.play(Create(final_box), run_time=1.5)
+        
+        # Closing text
+        closing_text = Text("Hypothesis Test Complete!", 
+                           font_size=32, color=self.WARNING_COLOR, weight=BOLD)
+        closing_text.next_to(final_box, DOWN, buff=0.8)
+        
+        self.play(Write(closing_text), run_time=2)
+        self.wait(3)
+        
+        # Final fade out
+        self.play(FadeOut(VGroup(summary_title, hypothesis_visual, rejection_rule, 
+                                results_group, interpretation, final_box, closing_text)), run_time=2)
+
+
+# Version with visual distribution curves
+class CoinFlipWithDistribution(Scene):
+    def construct(self):
+        # Set vertical format
+        self.camera.frame_width = 9
+        self.camera.frame_height = 16
+        
+        # Title
+        title = Text("Hypothesis Testing", font_size=48, weight=BOLD)
+        title.set_color_by_gradient("#FF6B6B", "#4ECDC4")
+        title.to_edge(UP, buff=1)
+        
+        self.play(Write(title), run_time=1.5)
+        
+        # Create distribution visualization
+        axes = Axes(
+            x_range=[-3, 3, 1],
+            y_range=[0, 0.5, 0.1],
+            x_length=6,
+            y_length=3,
+            axis_config={"color": WHITE, "stroke_width": 2},
+        )
+        axes.center().shift(UP * 2)
+        
+        # Normal distribution under H0
+        def normal_h0(x):
+            return 0.4 * np.exp(-0.5 * x**2)
+        
+        # Normal distribution under H1
+        def normal_h1(x):
+            return 0.35 * np.exp(-0.5 * (x - 1.5)**2)
+        
+        curve_h0 = axes.plot(normal_h0, x_range=[-3, 3], color="#4ECDC4", stroke_width=3)
+        curve_h1 = axes.plot(normal_h1, x_range=[-3, 3], color="#FF6B6B", stroke_width=3)
+        
+        # Labels
+        h0_label = MathTex("H_0", font_size=28, color="#4ECDC4")
+        h0_label.next_to(curve_h0.get_center(), UP, buff=0.3)
+        
+        h1_label = MathTex("H_1", font_size=28, color="#FF6B6B")
+        h1_label.next_to(curve_h1.get_center(), UP, buff=0.3)
+        
+        # Critical regions
+        critical_left = axes.plot(normal_h0, x_range=[-3, -2], color="#FF4757", stroke_width=4)
+        critical_right = axes.plot(normal_h0, x_range=[2, 3], color="#FF4757", stroke_width=4)
+        
+        self.play(Create(axes), run_time=1.5)
+        self.play(Create(curve_h0), Write(h0_label), run_time=2)
+        self.play(Create(curve_h1), Write(h1_label), run_time=2)
+        self.play(Create(critical_left), Create(critical_right), run_time=1.5)
+        
+        # Add significance level annotation
+        alpha_text = MathTex(r"\alpha = 0.00195", font_size=24, color="#FF4757")
+        alpha_text.next_to(axes, DOWN, buff=0.5)
+        
+        power_text = MathTex(r"\text{Power} = 0.3487", font_size=24, color="#FF6B6B")
+        power_text.next_to(alpha_text, DOWN, buff=0.3)
+        
+        self.play(Write(alpha_text), run_time=1)
+        self.play(Write(power_text), run_time=1)
+        
+        self.wait(3)
+
+
+# Quick version for shorter reels
+class CoinFlipQuick(Scene):
+    def construct(self):
+        # Set vertical format
+        self.camera.frame_width = 9
+        self.camera.frame_height = 16
+        
+        # Title
+        title = Text("Coin Flip Test", font_size=48, weight=BOLD)
+        title.set_color_by_gradient("#FF6B6B", "#4ECDC4")
+        title.to_edge(UP, buff=1)
+        
+        # Quick setup
+        setup = Text("10 flips, reject if 0 or 10 heads", font_size=26, color=WHITE)
+        setup.next_to(title, DOWN, buff=0.5)
+        
+        hypotheses = MathTex(r"H_0: p = \frac{1}{2} \text{ vs } H_1: p \neq \frac{1}{2}", 
+                           font_size=28, color="#45B7D1")
+        hypotheses.next_to(setup, DOWN, buff=0.5)
+        
+        self.play(Write(title), Write(setup), Write(hypotheses), run_time=2.5)
+        self.wait(1)
+        
+        # Quick solutions
+        solutions = [
+            (r"\text{Significance Level: } \alpha = \left(\frac{1}{2}\right)^9 = 0.00195", "#FF6B6B"),
+            (r"\text{Power (p=0.1): } (0.9)^{10} + (0.1)^{10} = 0.3487", "#4ECDC4")
+        ]
+        
+        y_pos = 1
+        for solution, color in solutions:
+            sol_math = MathTex(solution, font_size=26, color=color)
+            sol_math.move_to([0, y_pos, 0])
+            
+            self.play(Write(sol_math), run_time=2)
+            self.wait(1)
+            y_pos -= 2
+        
+        self.wait(2)
+
+class ParetoDistributionComplete(Scene):
+    # Colors for visual appeal (class attributes)
+    PRIMARY_COLOR = "#FF6B6B"
+    SECONDARY_COLOR = "#4ECDC4"
+    ACCENT_COLOR = "#45B7D1"
+    SUCCESS_COLOR = "#98D8C8"
+    WARNING_COLOR = "#FFD93D"
+    TEXT_COLOR = WHITE
+
+    def construct(self):
+        # Set up vertical format for Instagram reels
+        self.camera.frame_width = 9
+        self.camera.frame_height = 16
+
+        # Main title
+        main_title = Text("Pareto Distribution", font_size=48, color=self.PRIMARY_COLOR, weight=BOLD)
+        main_title.to_edge(UP, buff=0.8)
+
+        self.play(Write(main_title), run_time=1.5)
+
+        # Problem statement
+        problem_title = Text("Problem 47", font_size=36, color=self.SECONDARY_COLOR, weight=BOLD)
+        problem_title.next_to(main_title, DOWN, buff=0.5)
+
+        self.play(Write(problem_title), run_time=1)
+
+        # PDF formula
+        pdf_text = Text("Pareto PDF:", font_size=28, color=self.TEXT_COLOR)
+        pdf_formula = MathTex(
+            r"f(x|x_0,\theta) = \theta x_0^\theta x^{-\theta-1}",
+            font_size=32,
+            color=self.ACCENT_COLOR
+        )
+        conditions = MathTex(
+            r"x \geq x_0, \quad \theta > 1",
+            font_size=24,
+            color=self.SECONDARY_COLOR
+        )
+
+        pdf_group = VGroup(pdf_text, pdf_formula, conditions).arrange(DOWN, buff=0.3)
+        pdf_group.next_to(problem_title, DOWN, buff=0.6)
+
+        self.play(Write(pdf_text), run_time=1)
+        self.play(Write(pdf_formula), run_time=1.5)
+        self.play(Write(conditions), run_time=1)
+        self.wait(1)
+
+        # Sample assumption
+        sample_text = MathTex(
+            r"X_1, X_2, \ldots, X_n \text{ is an i.i.d. sample}",
+            font_size=28,
+            color=self.TEXT_COLOR
+        )
+        sample_text.next_to(pdf_group, DOWN, buff=0.5)
+
+        self.play(Write(sample_text), run_time=1.5)
+        self.wait(1)
+
+        # Questions list
+        questions = [
+            "a. Find the method of moments estimate of θ",
+            "b. Find the MLE of θ",
+            "c. Find the asymptotic variance of the MLE",
+            "d. Find a sufficient statistic for θ"
+        ]
+
+        question_objects = []
+        for i, q in enumerate(questions):
+            q_text = Text(q, font_size=24, color=self.TEXT_COLOR)
+            question_objects.append(q_text)
+
+        questions_group = VGroup(*question_objects).arrange(DOWN, buff=0.4, aligned_edge=LEFT)
+        questions_group.next_to(sample_text, DOWN, buff=0.8)
+
+        for q in question_objects:
+            self.play(Write(q), run_time=1)
+
+        self.wait(2)
+
+        # Clear screen for solutions
+        self.play(FadeOut(VGroup(pdf_group, sample_text, questions_group)), run_time=1)
+
+        # Solution Part A: Method of Moments
+        self.solve_part_a(main_title, problem_title)
+
+        # Solution Part B: MLE
+        self.solve_part_b(main_title, problem_title)
+
+        # Solution Part C: Asymptotic Variance
+        self.solve_part_c(main_title, problem_title)
+
+        # Solution Part D: Sufficient Statistic
+        self.solve_part_d(main_title, problem_title)
+
+        # Final summary
+        self.show_summary(main_title)
+
+    def solve_part_a(self, main_title, problem_title):
+        # Part A title
+        part_a_title = Text("Part A: Method of Moments", font_size=36, color=self.PRIMARY_COLOR, weight=BOLD)
+        part_a_title.next_to(problem_title, DOWN, buff=0.8)
+        
+        self.play(Write(part_a_title), run_time=1.5)
+        
+        # Expected value calculation
+        expected_value = MathTex(
+            r"E(X) = \frac{\theta x_0}{\theta - 1}",
+            font_size=32,
+            color=self.ACCENT_COLOR
+        )
+        expected_value.next_to(part_a_title, DOWN, buff=0.6)
+        
+        self.play(Write(expected_value), run_time=1.5)
+        
+        # Setting equal to sample mean
+        equation = MathTex(
+            r"\bar{X}(\theta - 1) = \theta x_0",
+            font_size=32,
+            color=self.TEXT_COLOR
+        )
+        equation.next_to(expected_value, DOWN, buff=0.5)
+        
+        self.play(Write(equation), run_time=1.5)
+        
+        # Solving for theta
+        solving = MathTex(
+            r"\theta(\bar{X} - x_0) = \bar{X}",
+            font_size=32,
+            color=self.TEXT_COLOR
+        )
+        solving.next_to(equation, DOWN, buff=0.5)
+        
+        self.play(Write(solving), run_time=1.5)
+        
+        # Final result for part A
+        result_a = MathTex(
+            r"\hat{\theta}_{MM} = \frac{\bar{X}}{\bar{X} - x_0}",
+            font_size=36,
+            color=self.SUCCESS_COLOR
+        )
+        result_a.next_to(solving, DOWN, buff=0.6)
+        
+        result_box_a = SurroundingRectangle(
+            result_a, 
+            color=self.SUCCESS_COLOR, 
+            buff=0.3,
+            corner_radius=0.2
+        )
+        
+        self.play(Write(result_a), run_time=2)
+        self.play(Create(result_box_a), run_time=1)
+        self.wait(1.5)
+        
+        # Clear for next part
+        self.play(FadeOut(VGroup(part_a_title, expected_value, equation, solving, result_a, result_box_a)), run_time=1)
+
+    def solve_part_b(self, main_title, problem_title):
+        # Part B title
+        part_b_title = Text("Part B: Maximum Likelihood", font_size=36, color=self.PRIMARY_COLOR, weight=BOLD)
+        part_b_title.next_to(problem_title, DOWN, buff=0.8)
+        
+        self.play(Write(part_b_title), run_time=1.5)
+        
+        # Likelihood function
+        likelihood = MathTex(
+            r"L(\theta) = \frac{(\theta x_0^\theta)^n}{\prod_{i=1}^n x_i^{\theta+1}}",
+            font_size=28,
+            color=self.ACCENT_COLOR
+        )
+        likelihood.next_to(part_b_title, DOWN, buff=0.6)
+        
+        self.play(Write(likelihood), run_time=2)
+        
+        # Log-likelihood
+        log_likelihood = MathTex(
+            r"\ell(\theta) = n\log\theta + n\theta\log x_0 - (\theta+1)\sum_{i=1}^n \log x_i",
+            font_size=24,
+            color=self.TEXT_COLOR
+        )
+        log_likelihood.next_to(likelihood, DOWN, buff=0.5)
+        
+        self.play(Write(log_likelihood), run_time=2.5)
+        
+        # First derivative
+        first_derivative = MathTex(
+            r"\ell'(\theta) = \frac{n}{\theta} + n\log x_0 - \sum_{i=1}^n \log x_i = 0",
+            font_size=26,
+            color=self.TEXT_COLOR
+        )
+        first_derivative.next_to(log_likelihood, DOWN, buff=0.5)
+        
+        self.play(Write(first_derivative), run_time=2)
+        
+        # Solving
+        solving_step = MathTex(
+            r"\frac{n}{\theta} = \sum_{i=1}^n \log x_i - n\log x_0",
+            font_size=28,
+            color=self.TEXT_COLOR
+        )
+        solving_step.next_to(first_derivative, DOWN, buff=0.5)
+        
+        self.play(Write(solving_step), run_time=1.5)
+        
+        # Final MLE result
+        result_b = MathTex(
+            r"\hat{\theta}_{MLE} = \frac{n}{\sum_{i=1}^n \log x_i - n\log x_0}",
+            font_size=32,
+            color=self.SUCCESS_COLOR
+        )
+        result_b.next_to(solving_step, DOWN, buff=0.6)
+        
+        result_box_b = SurroundingRectangle(
+            result_b, 
+            color=self.SUCCESS_COLOR, 
+            buff=0.3,
+            corner_radius=0.2
+        )
+        
+        self.play(Write(result_b), run_time=2)
+        self.play(Create(result_box_b), run_time=1)
+        self.wait(1.5)
+        
+        # Clear for next part
+        self.play(FadeOut(VGroup(part_b_title, likelihood, log_likelihood, 
+                                first_derivative, solving_step, result_b, result_box_b)), run_time=1)
+
+    def solve_part_c(self, main_title, problem_title):
+        # Part C title
+        part_c_title = Text("Part C: Asymptotic Variance", font_size=36, color=self.PRIMARY_COLOR, weight=BOLD)
+        part_c_title.next_to(problem_title, DOWN, buff=0.8)
+        
+        self.play(Write(part_c_title), run_time=1.5)
+        
+        # Explanation of asymptotic efficiency
+        efficiency_text = Text("MLE is asymptotically efficient", font_size=28, color=self.SECONDARY_COLOR)
+        efficiency_text.next_to(part_c_title, DOWN, buff=0.6)
+        
+        self.play(Write(efficiency_text), run_time=1.5)
+        
+        # Variance formula
+        variance_formula = MathTex(
+            r"\text{Var}(\hat{\theta}) \approx \frac{1}{nI(\theta)}",
+            font_size=32,
+            color=self.ACCENT_COLOR
+        )
+        variance_formula.next_to(efficiency_text, DOWN, buff=0.5)
+        
+        self.play(Write(variance_formula), run_time=1.5)
+        
+        # Fisher Information calculation
+        fisher_info = MathTex(
+            r"nI(\theta) = E\left[-\ell''(\theta)\right]",
+            font_size=28,
+            color=self.TEXT_COLOR
+        )
+        fisher_info.next_to(variance_formula, DOWN, buff=0.5)
+        
+        self.play(Write(fisher_info), run_time=1.5)
+        
+        # Second derivative
+        second_derivative = MathTex(
+            r"\ell''(\theta) = -\frac{n}{\theta^2}",
+            font_size=32,
+            color=self.TEXT_COLOR
+        )
+        second_derivative.next_to(fisher_info, DOWN, buff=0.5)
+        
+        self.play(Write(second_derivative), run_time=1.5)
+        
+        # Final variance result
+        result_c = MathTex(
+            r"\text{Var}(\hat{\theta}) = \frac{\theta^2}{n}",
+            font_size=36,
+            color=self.SUCCESS_COLOR
+        )
+        result_c.next_to(second_derivative, DOWN, buff=0.6)
+        
+        result_box_c = SurroundingRectangle(
+            result_c, 
+            color=self.SUCCESS_COLOR, 
+            buff=0.3,
+            corner_radius=0.2
+        )
+        
+        self.play(Write(result_c), run_time=2)
+        self.play(Create(result_box_c), run_time=1)
+        self.wait(1.5)
+        
+        # Clear for next part
+        self.play(FadeOut(VGroup(part_c_title, efficiency_text, variance_formula, 
+                                fisher_info, second_derivative, result_c, result_box_c)), run_time=1)
+
+    def solve_part_d(self, main_title, problem_title):
+        # Part D title
+        part_d_title = Text("Part D: Sufficient Statistic", font_size=36, color=self.PRIMARY_COLOR, weight=BOLD)
+        part_d_title.next_to(problem_title, DOWN, buff=0.8)
+        
+        self.play(Write(part_d_title), run_time=1.5)
+        
+        # Explanation
+        sufficient_text = Text("By factorization theorem:", font_size=28, color=self.SECONDARY_COLOR)
+        sufficient_text.next_to(part_d_title, DOWN, buff=0.6)
+        
+        self.play(Write(sufficient_text), run_time=1.5)
+        
+        # The sufficient statistic from the MLE derivation
+        statistic_explanation = MathTex(
+            r"T(X_1, \ldots, X_n) = \sum_{i=1}^n \log X_i",
+            font_size=32,
+            color=self.ACCENT_COLOR
+        )
+        statistic_explanation.next_to(sufficient_text, DOWN, buff=0.6)
+        
+        self.play(Write(statistic_explanation), run_time=2)
+        
+        # Alternative form
+        alternative_form = Text("or equivalently:", font_size=24, color=self.TEXT_COLOR)
+        alternative_form.next_to(statistic_explanation, DOWN, buff=0.4)
+        
+        alternative_statistic = MathTex(
+            r"T = \sum_{i=1}^n X_i",
+            font_size=32,
+            color=self.TEXT_COLOR
+        )
+        alternative_statistic.next_to(alternative_form, DOWN, buff=0.3)
+        
+        self.play(Write(alternative_form), run_time=1)
+        self.play(Write(alternative_statistic), run_time=1.5)
+        
+        # Final result for part D
+        result_d = MathTex(
+            r"T = \sum_{i=1}^n \log X_i \text{ is sufficient for } \theta",
+            font_size=28,
+            color=self.SUCCESS_COLOR
+        )
+        result_d.next_to(alternative_statistic, DOWN, buff=0.6)
+        
+        result_box_d = SurroundingRectangle(
+            result_d, 
+            color=self.SUCCESS_COLOR, 
+            buff=0.3,
+            corner_radius=0.2
+        )
+        
+        self.play(Write(result_d), run_time=2)
+        self.play(Create(result_box_d), run_time=1)
+        self.wait(1.5)
+        
+        # Clear for summary
+        self.play(FadeOut(VGroup(part_d_title, sufficient_text, statistic_explanation, 
+                                alternative_form, alternative_statistic, result_d, result_box_d)), run_time=1)
+
+    def show_summary(self, main_title):
+        # Summary title
+        summary_title = Text("Summary", font_size=42, color=self.PRIMARY_COLOR, weight=BOLD)
+        summary_title.next_to(main_title, DOWN, buff=1)
+        
+        self.play(Write(summary_title), run_time=1.5)
+        
+        # All results together
+        results = [
+            (r"a) \hat{\theta}_{MM} = \frac{\bar{X}}{\bar{X} - x_0}", self.PRIMARY_COLOR),
+            (r"b) \hat{\theta}_{MLE} = \frac{n}{\sum \log x_i - n\log x_0}", self.SECONDARY_COLOR),
+            (r"c) \text{Var}(\hat{\theta}) = \frac{\theta^2}{n}", self.ACCENT_COLOR),
+            (r"d) T = \sum \log X_i \text{ is sufficient}", self.SUCCESS_COLOR)
+        ]
+        
+        result_objects = []
+        for i, (result, color) in enumerate(results):
+            result_math = MathTex(result, font_size=26, color=color)
+            result_objects.append(result_math)
+        
+        results_group = VGroup(*result_objects).arrange(DOWN, buff=0.6)
+        results_group.next_to(summary_title, DOWN, buff=0.8)
+        
+        # Animate each result
+        for result in result_objects:
+            self.play(Write(result), run_time=1.5)
+            self.wait(0.5)
+        
+        # Final emphasis
+        final_box = SurroundingRectangle(
+            results_group, 
+            color=self.WARNING_COLOR, 
+            buff=0.4,
+            corner_radius=0.3,
+            stroke_width=3
+        )
+        
+        self.play(Create(final_box), run_time=1.5)
+        
+        # Closing text
+        closing_text = Text("Pareto Distribution Analysis Complete!", 
+                           font_size=32, color=self.WARNING_COLOR, weight=BOLD)
+        closing_text.next_to(results_group, DOWN, buff=1)
+        
+        self.play(Write(closing_text), run_time=2)
+        self.wait(3)
+        
+        # Final fade out
+        self.play(FadeOut(VGroup(summary_title, results_group, final_box, closing_text)), run_time=2)
 
 
 # --- Poisson Likelihood Ratio Test Animation for Reels ---
