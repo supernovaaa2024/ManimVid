@@ -2,7 +2,7 @@ from manim import *
 # --- Binomial Identity Proof Animation ---
 from manim import *
 
-# manim -pqh Prob.py CombinatoriaIdentity
+# manim -pql Prob.py CombinatoriaIdentity
 # Instagram Reels configuration - 9:16 aspect ratio
 config.pixel_height = 1920
 config.pixel_width = 1080
@@ -33,19 +33,13 @@ class CombinatoriaIdentity(Scene):
 
         self.play(Write(main_title), run_time=1.5)
 
-        # Problem statement
-        problem_title = Text("Problem 3", font_size=36, color=self.SECONDARY_COLOR, weight=BOLD)
-        problem_title.next_to(main_title, DOWN, buff=0.5)
-
-        self.play(Write(problem_title), run_time=1)
-
         # Given conditions
         conditions = MathTex(
             r"m, n, r \geq 1",
             font_size=28,
             color=self.TEXT_COLOR
         )
-        conditions.next_to(problem_title, DOWN, buff=0.6)
+        conditions.next_to(main_title, DOWN, buff=0.6)
 
         self.play(Write(conditions), run_time=1)
 
@@ -85,19 +79,20 @@ class CombinatoriaIdentity(Scene):
         # Clear screen for solutions
         self.play(FadeOut(VGroup(conditions, part_a_text, identity_a, part_b_text, identity_b)), run_time=1)
 
+
         # Solution Part A
-        self.solve_part_a(main_title, problem_title)
+        self.solve_part_a(main_title, part_a_text)
 
         # Solution Part B
-        self.solve_part_b(main_title, problem_title)
+        self.solve_part_b(main_title, part_a_text)
 
         # Final summary
         self.show_summary(main_title)
 
-    def solve_part_a(self, main_title, problem_title):
+    def solve_part_a(self, main_title, part_a_text):
         # Part A title
         part_a_title = Text("Part A: Combinatorial Interpretation", font_size=32, color=self.PRIMARY_COLOR, weight=BOLD)
-        part_a_title.next_to(problem_title, DOWN, buff=0.8)
+        part_a_title.next_to(part_a_text, DOWN, buff=0.8)
         
         self.play(Write(part_a_title), run_time=1.5)
         
@@ -146,7 +141,6 @@ class CombinatoriaIdentity(Scene):
         self.play(Write(method1_formula), run_time=1.5)
         self.wait(1)
         
-        # Clear visual for method 2
         self.play(FadeOut(VGroup(visual_group, question_text)), run_time=1)
         
         # Method 2
@@ -303,15 +297,9 @@ class CombinatoriaIdentity(Scene):
                                 result_box_b, expanded_text, expanded_form)), run_time=1)
 
     def show_summary(self, main_title):
-        # Summary title
-        summary_title = Text("Vandermonde's Identity", font_size=38, color=self.PRIMARY_COLOR, weight=BOLD)
-        summary_title.next_to(main_title, DOWN, buff=1)
-        
-        self.play(Write(summary_title), run_time=1.5)
-        
-        # General form
+        # General form (remove duplicate Vandermonde's Identity title)
         general_title = Text("General Form:", font_size=26, color=self.ACCENT_COLOR, weight=BOLD)
-        general_title.next_to(summary_title, DOWN, buff=0.6)
+        general_title.next_to(main_title, DOWN, buff=1.6)
         
         general_identity = MathTex(
             r"\binom{m+n}{r} = \sum_{k=0}^{r} \binom{m}{k} \binom{n}{r-k}",
@@ -359,7 +347,7 @@ class CombinatoriaIdentity(Scene):
         self.play(Create(final_box), run_time=1.5)
         
         # Final fade out
-        self.play(FadeOut(VGroup(summary_title, general_title, general_identity,
+        self.play(FadeOut(VGroup(general_title, general_identity,
                                 special_title, special_identity, interpretation_title,
                                 interpretation_text, final_box)), run_time=2)
         
