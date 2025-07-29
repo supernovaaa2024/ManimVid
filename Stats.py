@@ -1,4 +1,3 @@
-
 from manim import *
 
 import numpy as np
@@ -8,6 +7,254 @@ config.pixel_height = 1920
 config.pixel_width = 1080
 config.frame_height = 16.0
 config.frame_width = 9.0
+
+# manim -pqh Stats.py DoubleExponentialLRT
+from manim import *
+import numpy as np
+
+class DoubleExponentialLRT(Scene):
+    def construct(self):
+        # Set up for vertical (reels) format
+        self.camera.frame_width = 9
+        self.camera.frame_height = 16
+        
+        # Title
+        title = Text("Likelihood Ratio Test", font_size=36, color=BLUE)
+        subtitle = Text("Double Exponential Distribution", font_size=24)
+        title_group = VGroup(title, subtitle).arrange(DOWN, buff=0.3)
+        title_group.to_edge(UP, buff=0.5)
+        
+        self.play(Write(title))
+        self.play(Write(subtitle))
+        self.wait(0.3)
+        
+        # Problem setup
+        setup_title = Text("Problem Setup", font_size=30, color=GREEN)
+        setup_title.next_to(title_group, DOWN, buff=0.8)
+        
+        # Distribution definition
+        dist_eq = MathTex(
+            r"f(x) = \frac{1}{2}\lambda e^{-\lambda|x|}",
+            font_size=32
+        )
+        
+        # Hypotheses
+        h0 = MathTex(r"H_0: \lambda = \lambda_0", font_size=28)
+        h1 = MathTex(r"H_1: \lambda = \lambda_1", font_size=28)
+        condition = MathTex(r"\lambda_1 > \lambda_0", font_size=24, color=YELLOW)
+        
+        setup_group = VGroup(setup_title, dist_eq, h0, h1, condition)
+        setup_group.arrange(DOWN, buff=0.4)
+        setup_group.next_to(title_group, DOWN, buff=0.5)
+        
+        self.play(Write(setup_title))
+        self.play(Write(dist_eq))
+        self.play(Write(h0))
+        self.play(Write(h1))
+        self.play(Write(condition))
+        self.wait(2)
+        
+        # Clear setup for likelihood derivation
+        self.play(FadeOut(setup_group))
+        
+        # Likelihood ratio derivation
+        lr_title = Text("Likelihood Ratio", font_size=30, color=GREEN)
+        lr_title.next_to(title_group, DOWN, buff=0.5)
+        
+        # Likelihood under H0 and H1
+        l0 = MathTex(
+            r"\text{lik}(\lambda_0) = \left(\frac{1}{2}\lambda_0\right)^n e^{-\lambda_0\sum_{i=1}^n|x_i|}",
+            font_size=24
+        )
+        
+        l1 = MathTex(
+            r"\text{lik}(\lambda_1) = \left(\frac{1}{2}\lambda_1\right)^n e^{-\lambda_1\sum_{i=1}^n|x_i|}",
+            font_size=24
+        )
+        
+        # Likelihood ratio
+        lambda_ratio = MathTex(
+            r"\Lambda = \frac{\text{lik}(\lambda_0)}{\text{lik}(\lambda_1)}",
+            font_size=28
+        )
+        
+        # Simplified ratio
+        simplified_ratio = MathTex(
+            r"\Lambda = \left(\frac{\lambda_0}{\lambda_1}\right)^n e^{(\lambda_1-\lambda_0)\sum_{i=1}^n|x_i|}",
+            font_size=38
+        )
+        
+        lr_group = VGroup(lr_title, lambda_ratio, l0, l1, simplified_ratio)
+        lr_group.arrange(DOWN, buff=0.3)
+        lr_group.next_to(title_group, DOWN, buff=0.3)
+        
+        self.play(Write(lr_title))
+        self.play(Write(lambda_ratio))
+        self.play(Write(l0))
+        self.play(Write(l1))
+        self.wait(1)
+        self.play(Transform(VGroup(lambda_ratio, l0, l1), simplified_ratio))
+        self.wait(2)
+        
+        # Clear for test derivation
+        self.play(FadeOut(lr_group))
+        
+        # Test statistic derivation
+        test_title = Text("Test Statistic", font_size=30, color=GREEN)
+        test_title.next_to(title_group, DOWN, buff=0.5)
+        
+        # Since λ₁ > λ₀, reject H₀ when Λ ≤ c₀
+        reject_condition = MathTex(
+            r"\text{Since } \lambda_1 > \lambda_0, \text{ reject } H_0 \text{ when } \Lambda \leq c_0",
+            font_size=22
+        )
+        
+        # This is equivalent to
+        equiv_arrow = MathTex(r"\Updownarrow", font_size=30, color=YELLOW)
+        
+        # Test statistic condition
+        test_condition = MathTex(
+            r"\sum_{i=1}^n |x_i| \leq \frac{\ln\left[\left(\frac{\lambda_1}{\lambda_0}\right)^n c_0\right]}{\lambda_1 - \lambda_0} = c",
+            font_size=20
+        )
+        
+        test_group = VGroup(test_title, reject_condition, equiv_arrow, test_condition)
+        test_group.arrange(DOWN, buff=0.3)
+        test_group.next_to(title_group, DOWN, buff=0.3)
+        
+        self.play(Write(test_title))
+        self.play(Write(reject_condition))
+        self.play(Write(equiv_arrow))
+        self.play(Write(test_condition))
+        self.wait(2)
+        
+        # Clear for UMP explanation
+        self.play(FadeOut(test_group))
+        
+        # UMP explanation (Text for titles/explanations, MathTex for math)
+        ump_title = Text("Uniformly Most Powerful", font_size=28, color=GREEN, weight=BOLD)
+        ump_title.next_to(title_group, DOWN, buff=0.5)
+
+        # Neyman-Pearson lemma
+        np_text = Text("By Neyman-Pearson Lemma:", font_size=24, color=BLUE, weight=BOLD)
+
+        # Monotonic ratio explanation
+        monotonic_text = Text("Since the likelihood ratio is monotonic in the sufficient statistic", font_size=20, color=WHITE)
+        monotone_math = MathTex(r"\sum |x_i|", font_size=22, color=WHITE)
+        monotonic_group = VGroup(monotonic_text, monotone_math).arrange(RIGHT, buff=0.3)
+
+        # UMP conclusion
+        ump_conclusion_text = Text("This test is UMP for", font_size=22, color=YELLOW, weight=BOLD)
+        ump_conclusion_math = MathTex(r"H_1: \lambda > \lambda_0", font_size=22, color=YELLOW)
+        ump_conclusion_theorem = Text("by Karlin-Rubin theorem", font_size=20, color=YELLOW)
+        ump_conclusion_group = VGroup(ump_conclusion_text, ump_conclusion_math, ump_conclusion_theorem).arrange(DOWN, buff=0.1, aligned_edge=LEFT)
+
+        # Final test
+        final_test = MathTex(r"\text{Reject } H_0 \text{ if } \sum_{i=1}^n |X_i| \leq c", font_size=24, color=RED)
+
+        ump_group = VGroup(ump_title, np_text, monotonic_group, ump_conclusion_group, final_test)
+        ump_group.arrange(DOWN, buff=0.4)
+        ump_group.next_to(title_group, DOWN, buff=0.3)
+
+        self.play(Write(ump_title))
+        self.play(Write(np_text))
+        self.play(Write(monotonic_text), Write(monotone_math))
+        self.play(Write(ump_conclusion_text), Write(ump_conclusion_math), Write(ump_conclusion_theorem))
+        self.wait(1)
+
+        # Highlight final test
+        final_box = SurroundingRectangle(final_test, color=RED, buff=0.2)
+        self.play(Write(final_test))
+        self.play(Create(final_box))
+        self.wait(2)
+        
+        # Visual representation of the test
+        self.play(FadeOut(ump_group), FadeOut(final_box))
+        
+        # Create a visual representation
+        visual_title = Text("Test Visualization", font_size=28, color=GREEN)
+        visual_title.next_to(title_group, DOWN, buff=0.5)
+        
+        # Create axes for the test statistic distribution
+        axes = Axes(
+            x_range=[0, 6, 1],
+            y_range=[0, 0.8, 0.2],
+            x_length=6,
+            y_length=3,
+            axis_config={"color": BLUE},
+        ).scale(0.7)
+        
+        # Exponential-like curve for the distribution of sum of |Xi|
+        def dist_func(x):
+            return 0.6 * np.exp(-x/2) if x >= 0 else 0
+        
+        curve = axes.plot(dist_func, color=WHITE, x_range=[0, 6])
+        
+        # Critical value line
+        c_line = axes.get_vertical_line(axes.c2p(2, 0), color=RED, stroke_width=3)
+        c_label = MathTex("c", color=RED).next_to(c_line, UP)
+        
+        # Rejection region
+        rejection_area = axes.get_area(
+            curve, x_range=[0, 2], color=RED, opacity=0.3
+        )
+        
+        # Labels
+        x_label = axes.get_x_axis_label(r"\sum |X_i|")
+        reject_label = Text("Reject H₀", font_size=16, color=RED).next_to(rejection_area, DOWN)
+        
+        visual_group = VGroup(visual_title, axes, curve, c_line, c_label, 
+                            rejection_area, x_label, reject_label)
+        visual_group.next_to(title_group, DOWN, buff=0.2)
+        
+        self.play(Write(visual_title))
+        self.play(Create(axes))
+        self.play(Create(curve))
+        self.play(Create(c_line), Write(c_label))
+        self.play(FadeIn(rejection_area))
+        self.play(Write(x_label), Write(reject_label))
+
+        # Final summary
+        self.play(FadeOut(visual_group))
+
+        summary_title = Text("Summary", font_size=44, color=GREEN, weight=BOLD)
+        summary_title.next_to(title_group, DOWN, buff=0.5)
+
+        summary_points = VGroup(
+            MathTex(r"\text{• Likelihood ratio test derived}", font_size=24),
+            MathTex(r"\text{• Test statistic: } \sum |X_i|", font_size=24),
+            MathTex(r"\text{• Reject } H_0 \text{ if } \sum |X_i| \leq c", font_size=24),
+            MathTex(r"\text{• UMP test for } \lambda > \lambda_0", font_size=24, color=YELLOW),
+        ).arrange(DOWN, buff=0.22, aligned_edge=LEFT)
+
+        summary_group = VGroup(summary_title, summary_points)
+        summary_group.arrange(DOWN, buff=0.5)
+        summary_group.next_to(title_group, DOWN, buff=0.3)
+
+        self.play(Write(summary_title))
+        for point in summary_points:
+            self.play(Write(point))
+            self.wait(0.5)
+
+        self.wait(1)
+
+        # Add explanation about c and false positive rate (after summary)
+        c_expl_line1 = Text(
+            "c is chosen so the probability of false positive (Type I error)",
+            font_size=18, color=WHITE
+        )
+        c_expl_line2 = VGroup(
+            Text("is less than or equal to the significance level", font_size=18, color=WHITE),
+            MathTex(r"\alpha", font_size=22, color=YELLOW)
+        ).arrange(RIGHT, buff=0.08)
+        c_expl_group = VGroup(c_expl_line1, c_expl_line2).arrange(DOWN, buff=0.08, aligned_edge=LEFT)
+        c_expl_box = SurroundingRectangle(c_expl_group, color=TEAL_A, buff=0.12)
+        c_expl_vgroup = VGroup(c_expl_group, c_expl_box)
+        c_expl_vgroup.next_to(summary_group, DOWN, buff=0.12)
+
+        self.play(FadeIn(c_expl_vgroup), run_time=1.2)
+        self.wait(2)
+
 
 
 class CoinFlipHypothesisTest(Scene):

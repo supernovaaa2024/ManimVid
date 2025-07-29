@@ -1,9 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipWithDistribution/4129319376_995745979_223132457.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipWithDistribution/371154078_2234725272_3007692301.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipWithDistribution/371154078_385039712_2379194579.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipWithDistribution/371154078_1799035937_2177342443.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipWithDistribution/371154078_515323087_3129825224.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipWithDistribution/371154078_122270871_2592339188.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipWithDistribution/371154078_3931936875_1120389789.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipWithDistribution/371154078_4277570474_2930489934.mp4'

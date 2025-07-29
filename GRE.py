@@ -1,10 +1,282 @@
+
 from manim import *
+
+# Color constants for use throughout the scenes
+TEXT_COLOR = WHITE
+ACCENT_COLOR = "#45B7D1"
+STATS_COLOR = "#98D8C8"
+SECONDARY_COLOR = "#4ECDC4"
+WARNING_COLOR = "#FFD93D"
+SUCCESS_COLOR = "#98D8C8"
+GEOMETRY_COLOR = "#45B7D1"
+PRIMARY_COLOR = "#FF6B6B"
 
 # Instagram Reels configuration - 9:16 aspect ratio
 config.pixel_height = 1920
 config.pixel_width = 1080
 config.frame_height = 16.0
 config.frame_width = 9.0
+
+from manim import *
+import numpy as np
+
+class RectangleGeo(Scene):
+    def construct(self):
+        # Set up vertical format for Instagram reels
+        self.camera.frame_width = 9
+        self.camera.frame_height = 16
+        
+        # Colors for visual appeal
+        PRIMARY_COLOR = "#FF6B6B"
+        SECONDARY_COLOR = "#4ECDC4"
+        ACCENT_COLOR = "#45B7D1"
+        SUCCESS_COLOR = "#98D8C8"
+        WARNING_COLOR = "#FFD93D"
+        STATS_COLOR = "#E74C3C"
+        GEOMETRY_COLOR = "#9B59B6"
+        TEXT_COLOR = WHITE
+        
+        # Main title
+        main_title = Text("GRE Math", font_size=48, color=PRIMARY_COLOR, weight=BOLD)
+        main_title.to_edge(UP, buff=0.8)
+        
+        self.play(Write(main_title), run_time=1.5)
+        
+        # Problems overview
+        problems_title = Text("Geometry Problem", font_size=32, color=SECONDARY_COLOR, weight=BOLD)
+        problems_title.next_to(main_title, DOWN, buff=0.5)
+        
+        self.play(Write(problems_title), run_time=1)
+        
+        # Problem list
+        problem_list = [
+            "Rectangle Geometry"
+        ]
+        
+        problem_objects = []
+        colors = [STATS_COLOR, GEOMETRY_COLOR]
+        
+        for i, (problem, color) in enumerate(zip(problem_list, colors)):
+            p_text = Text(problem, font_size=32, color=color)
+            problem_objects.append(p_text)
+        
+        problems_group = VGroup(*problem_objects).arrange(DOWN, buff=0.8, aligned_edge=ORIGIN)
+        problems_group.next_to(problems_title, DOWN, buff=0.8)
+        
+        for p in problem_objects:
+            self.play(Write(p), run_time=1.2)
+        
+        self.wait(2)
+        
+        # Clear screen for solutions
+        self.play(FadeOut(VGroup(problems_title, problems_group)), run_time=1)
+
+        # Solve each problem
+        self.solve_rectangle_geometry(main_title)
+        
+        # Final summary
+        self.show_summary(main_title)
+
+
+    def solve_rectangle_geometry(self, main_title):
+        # Problem title
+        problem_title = Text("Rectangle Geometry", font_size=36, color=GEOMETRY_COLOR, weight=BOLD)
+        problem_title.next_to(main_title, DOWN, buff=0.8)
+        
+        self.play(Write(problem_title), run_time=1.5)
+        
+        # Problem setup
+        setup = Text("Find Point P inside rectangle ABCD", font_size=26, color=TEXT_COLOR)
+        setup.next_to(problem_title, DOWN, buff=0.6)
+        
+        self.play(Write(setup), run_time=1.5)
+        
+        # Create rectangle visualization
+        # Rectangle ABCD
+        A = np.array([-2, 1.5, 0])
+        B = np.array([2, 1.5, 0])
+        C = np.array([2, -1, 0])
+        D = np.array([-2, -1, 0])
+        
+        rectangle = Polygon(A, B, C, D, color=GEOMETRY_COLOR, stroke_width=3)
+        
+        # Point P inside
+        P = np.array([0.5, 0.2, 0])
+        point_P = Dot(P, color=WARNING_COLOR, radius=0.08)
+        
+        # Labels
+        label_A = Text("A", font_size=20, color=WHITE).next_to(A, UP+LEFT, buff=0.1)
+        label_B = Text("B", font_size=20, color=WHITE).next_to(B, UP+RIGHT, buff=0.1)
+        label_C = Text("C", font_size=20, color=WHITE).next_to(C, DOWN+RIGHT, buff=0.1)
+        label_D = Text("D", font_size=20, color=WHITE).next_to(D, DOWN+LEFT, buff=0.1)
+        label_P = Text("P", font_size=20, color=WARNING_COLOR).next_to(P, UP, buff=0.1)
+        
+        # Distance lines
+        line_PA = Line(P, A, color=ACCENT_COLOR, stroke_width=2)
+        line_PB = Line(P, B, color=ACCENT_COLOR, stroke_width=2)
+        line_PC = Line(P, C, color=ACCENT_COLOR, stroke_width=2)
+        line_PD = Line(P, D, color=SUCCESS_COLOR, stroke_width=3)
+        
+        # Distance labels
+        label_PA = MathTex("2", font_size=18, color=ACCENT_COLOR).move_to((P + A) / 2 + 0.2*UP)
+        label_PB = MathTex("3", font_size=18, color=ACCENT_COLOR).move_to((P + B) / 2 + 0.2*RIGHT)
+        label_PC = MathTex("4", font_size=18, color=ACCENT_COLOR).move_to((P + C) / 2 + 0.2*DOWN)
+        label_PD = MathTex("?", font_size=18, color=SUCCESS_COLOR).move_to((P + D) / 2 + 0.2*LEFT)
+        
+        geometry_group = VGroup(
+            rectangle, point_P, label_A, label_B, label_C, label_D, label_P,
+            line_PA, line_PB, line_PC, line_PD,
+            label_PA, label_PB, label_PC, label_PD
+        ).scale(0.8)
+        geometry_group.next_to(setup, DOWN, buff=0.6)
+        
+        # Animate the geometric construction
+        self.play(Create(rectangle), run_time=1.5)
+        self.play(Create(point_P), Write(label_P), run_time=1)
+        self.play(Write(VGroup(label_A, label_B, label_C, label_D)), run_time=1.5)
+        
+        # Show distances
+        self.play(Create(line_PA), Write(label_PA), run_time=1)
+        self.play(Create(line_PB), Write(label_PB), run_time=1)
+        self.play(Create(line_PC), Write(label_PC), run_time=1)
+        self.play(Create(line_PD), Write(label_PD), run_time=1)
+        
+        # Given information
+        given = MathTex(
+            r"PA = 2, \quad PB = 3, \quad PC = 4",
+            font_size=24,
+            color=ACCENT_COLOR
+        )
+        given.next_to(geometry_group, DOWN, buff=0.5)
+        
+        self.play(Write(given), run_time=1.5)
+        
+        # Clear diagram for calculation
+        self.play(FadeOut(geometry_group), run_time=1)
+        
+        # British Flag Theorem / Coordinate approach
+        theorem_title = Text("Use coordinate system", font_size=24, color=GEOMETRY_COLOR)
+        theorem_title.next_to(given, DOWN, buff=0.6)
+        
+        self.play(Write(theorem_title), run_time=1.5)
+        
+        # Set up coordinates
+        coord_setup = MathTex(
+            r"\text{Let } A(0,0), B(a,0), C(a,b), D(0,b), P(x,y)",
+            font_size=20,
+            color=TEXT_COLOR
+        )
+        coord_setup.next_to(theorem_title, DOWN, buff=0.4)
+        
+        self.play(Write(coord_setup), run_time=2.5)
+        
+        # Distance equations
+        dist_eqs = VGroup(
+            MathTex(r"PA^2 = x^2 + y^2 = 4", font_size=20, color=TEXT_COLOR),
+            MathTex(r"PB^2 = (x-a)^2 + y^2 = 9", font_size=20, color=TEXT_COLOR),
+            MathTex(r"PC^2 = (x-a)^2 + (y-b)^2 = 16", font_size=20, color=TEXT_COLOR)
+        ).arrange(DOWN, buff=0.2, aligned_edge=LEFT)
+        dist_eqs.next_to(coord_setup, DOWN, buff=0.4)
+        
+        for eq in dist_eqs:
+            self.play(Write(eq), run_time=1.2)
+        
+        # Key insight: British Flag Theorem
+        theorem = MathTex(
+            r"PA^2 + PC^2 = PB^2 + PD^2",
+            font_size=24,
+            color=WARNING_COLOR
+        )
+        theorem.next_to(dist_eqs, DOWN, buff=0.6)
+        
+        self.play(Write(theorem), run_time=2)
+        
+        # Substitute values
+        substitution = MathTex(
+            r"4 + 16 = 9 + PD^2",
+            font_size=26,
+            color=GEOMETRY_COLOR
+        )
+        substitution.next_to(theorem, DOWN, buff=0.4)
+        
+        self.play(Write(substitution), run_time=1.8)
+        
+        # Solve for PD
+        solution = MathTex(
+            r"PD^2 = 20 - 9 = 11",
+            font_size=26,
+            color=TEXT_COLOR
+        )
+        solution.next_to(substitution, DOWN, buff=0.4)
+        
+        self.play(Write(solution), run_time=1.8)
+        
+        # Final answer
+        final_answer = MathTex(
+            r"PD = \sqrt{11}",
+            font_size=32,
+            color=SUCCESS_COLOR
+        )
+        final_answer.next_to(solution, DOWN, buff=0.5)
+        
+        result_box_geo = SurroundingRectangle(final_answer, color=SUCCESS_COLOR, buff=0.3)
+        
+        self.play(Write(final_answer), run_time=2)
+        self.play(Create(result_box_geo), run_time=1)
+        self.wait(1.5)
+        
+        # Clear for summary
+        self.play(FadeOut(VGroup(problem_title, setup, given, theorem_title, coord_setup,
+                                dist_eqs, theorem, substitution, solution, final_answer,
+                                result_box_geo)), run_time=1)
+
+    def show_summary(self, main_title):
+        # Summary title
+        summary_title = Text("Solution", font_size=42, color=PRIMARY_COLOR, weight=BOLD)
+        summary_title.next_to(main_title, DOWN, buff=1)
+        
+        self.play(Write(summary_title), run_time=1.5)
+        
+        # Results summary
+        results = [
+            ("Rectangle Geometry: PD = √11", GEOMETRY_COLOR)
+        ]
+        
+        result_objects = []
+        for result_text, color in results:
+            result = Text(result_text, font_size=28, color=color)
+            result_objects.append(result)
+        
+        results_group = VGroup(*result_objects).arrange(DOWN, buff=1)
+        results_group.next_to(summary_title, DOWN, buff=0.8)
+        
+        # Animate each result
+        for result in result_objects:
+            self.play(Write(result), run_time=1.8)
+            self.wait(0.5)
+        
+        # Key concepts
+        concepts = Text("Theorem: British Flag Theorem", 
+                       font_size=24, color=ACCENT_COLOR)
+        concepts.next_to(results_group, DOWN, buff=0.8)
+        
+        self.play(Write(concepts), run_time=2)
+        
+        # Final emphasis box
+        final_box = SurroundingRectangle(
+            VGroup(results_group, concepts), 
+            color=WARNING_COLOR, 
+            buff=0.4,
+            corner_radius=0.3,
+            stroke_width=3
+        )
+        
+        self.play(Create(final_box), run_time=1.5)
+        
+        # Final fade out
+        self.play(FadeOut(VGroup(summary_title, results_group, concepts, final_box)), run_time=2)
+
+
 
 class QuadrilateralPerimeter(Scene):
     def construct(self):

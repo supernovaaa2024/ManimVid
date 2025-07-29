@@ -1,8 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipQuick/4129319376_2453979304_223132457.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipQuick/371154078_1432596116_1357890588.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipQuick/371154078_299357246_797610989.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipQuick/371154078_1432596116_4139626833.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipQuick/371154078_1923471634_1436758589.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipQuick/371154078_1432596116_3995166022.mp4'
-file 'file:/Users/owenhuang/Desktop/ManimVid/media/videos/Stats/1920p15/partial_movie_files/CoinFlipQuick/371154078_2872842549_4065012097.mp4'
