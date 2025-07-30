@@ -1,6 +1,285 @@
+# --- Animated Normal Curve: Mean and SD Changes ---
 from manim import *
-
 import numpy as np
+import scipy.stats as stats
+
+# manim -pqh Stats.py NormalDistributionReel
+from manim import *
+import numpy as np
+from scipy import stats
+from manim import *
+import numpy as np
+from scipy import stats
+
+class NormalDistributionReel(Scene):
+    def construct(self):
+        # Configure for Instagram Reels (9:16 aspect ratio)
+        self.camera.frame_height = 14
+        self.camera.frame_width = 14 * 9/16
+        
+        # Title
+        title = Text("Normal Distribution", font_size=48, weight=BOLD)
+        title.set_color_by_gradient(BLUE, TEAL)
+        title.to_edge(UP, buff=0.5)
+        
+        # Mathematical formula
+        formula = MathTex(r"f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}")
+        formula.set_color(WHITE).scale(0.8)
+        formula.next_to(title, DOWN, buff=0.3)
+        
+        # Create axes
+        axes = Axes(
+            x_range=[-6, 6, 1],
+            y_range=[0, 0.6, 0.1],
+            x_length=6,
+            y_length=4,
+            axis_config={"color": WHITE, "stroke_width": 2}
+        )
+        axes.shift(DOWN * 1)
+        
+        # Labels
+        x_label = axes.get_x_axis_label("x", direction=RIGHT)
+        y_label = axes.get_y_axis_label("f(x)", direction=UP)
+        
+        # Create the initial bell curve (μ=0, σ=1)
+        bell_curve = axes.plot(
+            lambda x: stats.norm.pdf(x, 0, 1),
+            x_range=[-6, 6],
+            color=BLUE,
+            stroke_width=4
+        )
+        
+        # Area under curve
+        area = axes.get_area(
+            bell_curve,
+            x_range=[-6, 6],
+            color=BLUE,
+            opacity=0.3
+        )
+        
+        # 68-95-99.7 rule visualization
+        std_areas = []
+        colors = [YELLOW, ORANGE, RED]
+        ranges = [1, 2, 3]
+        
+        for i, (r, color) in enumerate(zip(ranges, colors)):
+            std_area = axes.get_area(
+                bell_curve,
+                x_range=[-r, r],
+                color=color,
+                opacity=0.6
+            )
+            std_areas.append(std_area)
+        
+        # Percentage labels
+        percentages = ["68%", "95%", "99.7%"]
+        percent_labels = VGroup()
+        for i, (pct, color) in enumerate(zip(percentages, colors)):
+            label = Text(pct, font_size=24, weight=BOLD, color=color)
+            label.move_to(axes.c2p(0, 0.45 - i*0.08))
+            percent_labels.add(label)
+        
+        # Parameter display
+        param_text = MathTex(r"\mu = 0, \sigma = 1", font_size=32, color=WHITE)
+        param_text.next_to(axes, DOWN, buff=0.5)
+        
+        # Animation sequence - Initial setup
+        self.play(Write(title), run_time=1)
+        self.play(Write(formula), run_time=1.5)
+        self.play(Create(axes), Write(x_label), Write(y_label), run_time=1)
+        self.play(Create(bell_curve), run_time=1.5)
+        self.play(FadeIn(area), Write(param_text), run_time=1)
+        
+        # Show standard deviations
+        for i, (std_area, label) in enumerate(zip(std_areas, percent_labels)):
+            self.play(
+                Transform(area, std_area),
+                Write(label),
+                run_time=1
+            )
+            self.wait(0.5)
+        
+        # Clear the percentage labels to focus on parameter changes
+        self.play(
+            FadeOut(percent_labels),
+            Transform(area, axes.get_area(bell_curve, x_range=[-6, 6], 
+                                        color=BLUE, opacity=0.3)),
+            run_time=1
+        )
+        
+        # Section 1: Changing Mean (μ)
+        mean_title = Text("Changing Mean (μ)", font_size=36, weight=BOLD, color=GREEN)
+        mean_title.move_to(param_text.get_center() + DOWN * 0.5)
+        
+        self.play(Write(mean_title), run_time=1)
+        
+        # Show different means
+        means = [0, 2, -2, 0]
+        mean_colors = [BLUE, GREEN, RED, BLUE]
+        
+        for i, (mu, color) in enumerate(zip(means[1:], mean_colors[1:]), 1):
+            # Create new curve with different mean
+            new_curve = axes.plot(
+                lambda x: stats.norm.pdf(x, mu, 1),
+                x_range=[-6, 6],
+                color=color,
+                stroke_width=4
+            )
+            
+            new_area = axes.get_area(
+                new_curve,
+                x_range=[-6, 6],
+                color=color,
+                opacity=0.3
+            )
+            
+            new_param_text = MathTex(f"\\mu = {mu}, \\sigma = 1", 
+                                   font_size=32, color=color)
+            new_param_text.next_to(axes, DOWN, buff=0.5)
+            
+            # Animate transformation
+            self.play(
+                Transform(bell_curve, new_curve),
+                Transform(area, new_area),
+                Transform(param_text, new_param_text),
+                run_time=1.5
+            )
+            self.wait(0.8)
+        
+        self.play(FadeOut(mean_title), run_time=0.5)
+        
+        # Section 2: Changing Standard Deviation (σ)
+        std_title = Text("Changing Std Dev (σ)", font_size=36, weight=BOLD, color=PURPLE)
+        std_title.move_to(mean_title.get_center())
+        
+        self.play(Write(std_title), run_time=1)
+        
+        # Show different standard deviations (keep mean at 0)
+        stds = [1, 0.5, 2, 1.5, 1]
+        std_colors = [BLUE, PURPLE, ORANGE, PINK, BLUE]
+        
+        for i, (sigma, color) in enumerate(zip(stds[1:], std_colors[1:]), 1):
+            # Create new curve with different std dev
+            new_curve = axes.plot(
+                lambda x: stats.norm.pdf(x, 0, sigma),
+                x_range=[-6, 6],
+                color=color,
+                stroke_width=4
+            )
+            
+            new_area = axes.get_area(
+                new_curve,
+                x_range=[-6, 6],
+                color=color,
+                opacity=0.3
+            )
+            
+            new_param_text = MathTex(f"\\mu = 0, \\sigma = {sigma}", 
+                                   font_size=32, color=color)
+            new_param_text.next_to(axes, DOWN, buff=0.5)
+            
+            # Add descriptive text
+            if sigma < 1:
+                desc_text = Text("Narrower & Taller", font_size=24, color=color)
+            elif sigma > 1:
+                desc_text = Text("Wider & Shorter", font_size=24, color=color)
+            else:
+                desc_text = Text("Standard Normal", font_size=24, color=color)
+            
+            desc_text.next_to(new_param_text, DOWN, buff=0.8)
+            
+            # Animate transformation
+            self.play(
+                Transform(bell_curve, new_curve),
+                Transform(area, new_area),
+                Transform(param_text, new_param_text),
+                run_time=1.5
+            )
+            self.play(Write(desc_text), run_time=0.5)
+            self.wait(0.8)
+            self.play(FadeOut(desc_text), run_time=0.3)
+        
+        self.play(FadeOut(std_title), run_time=0.5)
+        
+        # Section 3: Changing Both Parameters
+        both_title = Text("Both μ and σ", font_size=36, weight=BOLD, color=GOLD)
+        both_title.move_to(std_title.get_center())
+        
+        self.play(Write(both_title), run_time=1)
+        
+        # Show combinations of mean and std dev
+        params = [(0, 1), (2, 0.8), (-1, 1.5), (1, 0.6), (0, 1)]
+        combo_colors = [BLUE, GOLD, MAROON, TEAL, BLUE]
+        
+        for i, ((mu, sigma), color) in enumerate(zip(params[1:], combo_colors[1:]), 1):
+            # Create new curve
+            new_curve = axes.plot(
+                lambda x: stats.norm.pdf(x, mu, sigma),
+                x_range=[-6, 6],
+                color=color,
+                stroke_width=4
+            )
+            
+            new_area = axes.get_area(
+                new_curve,
+                x_range=[-6, 6],
+                color=color,
+                opacity=0.3
+            )
+            
+            new_param_text = MathTex(f"\\mu = {mu}, \\sigma = {sigma}", 
+                                   font_size=32, color=color)
+            new_param_text.next_to(axes, DOWN, buff=0.5)
+            
+            # Animate transformation
+            self.play(
+                Transform(bell_curve, new_curve),
+                Transform(area, new_area),
+                Transform(param_text, new_param_text),
+                run_time=1.5
+            )
+            self.wait(0.8)
+        
+        # Final message
+        self.play(FadeOut(both_title), run_time=0.5)
+        
+        final_message = Text("μ shifts, σ shapes!", font_size=32, weight=BOLD, color=WHITE)
+        final_message.set_color_by_gradient(GREEN, PURPLE)
+        final_message.next_to(param_text, DOWN, buff=0.3)
+        
+        self.play(Write(final_message), run_time=1)
+        
+        # Add sparkle effects for finale
+        sparkles = VGroup()
+        for _ in range(15):
+            sparkle = Star(
+                n=4,
+                outer_radius=0.1,
+                inner_radius=0.05,
+                color=random_bright_color(),
+                fill_opacity=0.8
+            )
+            sparkle.move_to([
+                np.random.uniform(-3, 3),
+                np.random.uniform(-2, 6),
+                0
+            ])
+            sparkles.add(sparkle)
+        
+        self.play(
+            LaggedStart(*[FadeIn(sparkle) for sparkle in sparkles]),
+            lag_ratio=0.1,
+            run_time=1
+        )
+        
+        self.play(
+            LaggedStart(*[FadeOut(sparkle) for sparkle in sparkles]),
+            lag_ratio=0.05,
+            run_time=0.8
+        )
+        
+        self.wait(1.5)
+
 
 # Instagram Reels configuration - 9:16 aspect ratio
 config.pixel_height = 1920
@@ -11,6 +290,372 @@ config.frame_width = 9.0
 # manim -pqh Stats.py DoubleExponentialLRT
 from manim import *
 import numpy as np
+
+from manim import *
+import numpy as np
+from scipy import stats
+
+
+# 2. Uniform Distribution
+class UniformDistributionReel(Scene):
+    def construct(self):
+        self.camera.frame_height = 14
+        self.camera.frame_width = 14 * 9/16
+        
+        title = Text("Uniform Distribution", font_size=48, weight=BOLD)
+        title.set_color_by_gradient(GREEN, BLUE)
+        title.to_edge(UP, buff=0.5)
+        
+        formula = MathTex(r"f(x) = \begin{cases} \frac{1}{b-a} & \text{if } a \leq x \leq b \\ 0 & \text{otherwise} \end{cases}")
+        formula.set_color(WHITE).scale(0.7)
+        formula.next_to(title, DOWN, buff=0.3)
+        
+        axes = Axes(
+            x_range=[-1, 5, 1],
+            y_range=[0, 0.6, 0.1],
+            x_length=6,
+            y_length=4,
+            axis_config={"color": WHITE, "stroke_width": 2}
+        )
+        axes.shift(DOWN * 1)
+        
+        # Create uniform distribution rectangle
+        a, b = 1, 4
+        height = 1/(b-a)
+        
+        # Rectangle
+        rect = Rectangle(
+            width=axes.x_length * (b-a)/6,
+            height=axes.y_length * height/0.6,
+            color=GREEN,
+            fill_opacity=0.6,
+            stroke_width=4
+        )
+        rect.move_to(axes.c2p((a+b)/2, height/2))
+        
+        # Vertical lines at boundaries
+        left_line = axes.get_vertical_line(axes.c2p(a, height), color=GREEN, stroke_width=4)
+        right_line = axes.get_vertical_line(axes.c2p(b, height), color=GREEN, stroke_width=4)
+        
+        # Parameter labels
+        a_label = MathTex("a", color=GREEN).next_to(axes.c2p(a, 0), DOWN)
+        b_label = MathTex("b", color=GREEN).next_to(axes.c2p(b, 0), DOWN)
+        height_label = MathTex(r"\frac{1}{b-a}", color=GREEN).next_to(rect, RIGHT)
+        
+        # Animation
+        self.play(Write(title), run_time=1)
+        self.play(Write(formula), run_time=2)
+        self.play(Create(axes), run_time=1)
+        self.play(
+            Create(rect),
+            Create(left_line),
+            Create(right_line),
+            run_time=1.5
+        )
+        self.play(
+            Write(a_label),
+            Write(b_label),
+            Write(height_label),
+            run_time=1
+        )
+        
+        # Highlight equal probability
+        equal_text = Text("Equal Probability", font_size=32, color=GREEN)
+        equal_text.next_to(axes, DOWN, buff=0.5)
+        self.play(Write(equal_text), run_time=1)
+        
+        self.wait(1.5)
+
+# 3. Exponential Distribution
+class ExponentialDistributionReel(Scene):
+    def construct(self):
+        self.camera.frame_height = 14
+        self.camera.frame_width = 14 * 9/16
+        
+        title = Text("Exponential Distribution", font_size=48, weight=BOLD)
+        title.set_color_by_gradient(RED, ORANGE)
+        title.to_edge(UP, buff=0.5)
+        
+        formula = MathTex(r"f(x) = \lambda e^{-\lambda x}, \quad x \geq 0")
+        formula.set_color(WHITE).scale(0.8)
+        formula.next_to(title, DOWN, buff=0.3)
+        
+        axes = Axes(
+            x_range=[0, 5, 1],
+            y_range=[0, 2, 0.5],
+            x_length=6,
+            y_length=4,
+            axis_config={"color": WHITE, "stroke_width": 2}
+        )
+        axes.shift(DOWN * 1)
+        
+        # Different lambda values
+        lambdas = [0.5, 1, 2]
+        colors = [RED, ORANGE, YELLOW]
+        
+        curves = VGroup()
+        areas = VGroup()
+        labels = VGroup()
+        
+        for i, (lam, color) in enumerate(zip(lambdas, colors)):
+            curve = axes.plot(
+                lambda x: lam * np.exp(-lam * x),
+                x_range=[0, 5],
+                color=color,
+                stroke_width=4
+            )
+            
+            area = axes.get_area(
+                curve,
+                x_range=[0, 5],
+                color=color,
+                opacity=0.3
+            )
+            
+            label = MathTex(f"\\lambda = {lam}", color=color)
+            label.move_to(axes.c2p(3.5, 1.5 - i*0.3))
+            
+            curves.add(curve)
+            areas.add(area)
+            labels.add(label)
+        
+        # Animation
+        self.play(Write(title), run_time=1)
+        self.play(Write(formula), run_time=1.5)
+        self.play(Create(axes), run_time=1)
+        
+        # Show curves one by one
+        for curve, area, label in zip(curves, areas, labels):
+            self.play(
+                Create(curve),
+                FadeIn(area),
+                Write(label),
+                run_time=1.2
+            )
+            self.wait(0.5)
+        
+        # Highlight "memoryless" property
+        memoryless_text = Text("Memoryless Property", font_size=28, color=WHITE)
+        memoryless_text.next_to(axes, DOWN, buff=0.5)
+        self.play(Write(memoryless_text), run_time=1)
+        
+        self.wait(1.5)
+
+# 4. Beta Distribution
+class BetaDistributionReel(Scene):
+    def construct(self):
+        self.camera.frame_height = 14
+        self.camera.frame_width = 14 * 9/16
+        
+        title = Text("Beta Distribution", font_size=48, weight=BOLD)
+        title.set_color_by_gradient(PURPLE, PINK)
+        title.to_edge(UP, buff=0.5)
+        
+        formula = MathTex(r"f(x) = \frac{x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha,\beta)}, \quad 0 \leq x \leq 1")
+        formula.set_color(WHITE).scale(0.7)
+        formula.next_to(title, DOWN, buff=0.3)
+        
+        axes = Axes(
+            x_range=[0, 1, 0.2],
+            y_range=[0, 3, 0.5],
+            x_length=6,
+            y_length=4,
+            axis_config={"color": WHITE, "stroke_width": 2}
+        )
+        axes.shift(DOWN * 1)
+        
+        # Different parameter combinations
+        params = [(1, 1), (2, 5), (5, 2), (2, 2)]
+        colors = [PURPLE, PINK, BLUE, GREEN]
+        
+        curves = VGroup()
+        labels = VGroup()
+        
+        for i, ((alpha, beta), color) in enumerate(zip(params, colors)):
+            curve = axes.plot(
+                lambda x: stats.beta.pdf(x, alpha, beta),
+                x_range=[0.01, 0.99],
+                color=color,
+                stroke_width=4
+            )
+            
+            label = MathTex(f"\\alpha={alpha}, \\beta={beta}", color=color, font_size=24)
+            label.move_to(axes.c2p(0.7, 2.5 - i*0.4))
+            
+            curves.add(curve)
+            labels.add(label)
+        
+        # Animation
+        self.play(Write(title), run_time=1)
+        self.play(Write(formula), run_time=2)
+        self.play(Create(axes), run_time=1)
+        
+        # Show different shapes
+        for curve, label in zip(curves, labels):
+            self.play(Create(curve), Write(label), run_time=1)
+            self.wait(0.5)
+        
+        # Highlight bounded [0,1]
+        bounded_text = Text("Bounded: [0, 1]", font_size=28, color=WHITE)
+        bounded_text.next_to(axes, DOWN, buff=0.5)
+        self.play(Write(bounded_text), run_time=1)
+        
+        self.wait(1.5)
+
+# 5. Poisson Distribution (Discrete)
+class PoissonDistributionReel(Scene):
+    def construct(self):
+        self.camera.frame_height = 14
+        self.camera.frame_width = 14 * 9/16
+        
+        title = Text("Poisson Distribution", font_size=48, weight=BOLD)
+        title.set_color_by_gradient(TEAL, BLUE)
+        title.to_edge(UP, buff=0.5)
+        
+        formula = MathTex(r"P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}")
+        formula.set_color(WHITE).scale(0.8)
+        formula.next_to(title, DOWN, buff=0.3)
+        
+        axes = Axes(
+            x_range=[0, 15, 1],
+            y_range=[0, 0.4, 0.1],
+            x_length=6,
+            y_length=4,
+            axis_config={"color": WHITE, "stroke_width": 2}
+        )
+        axes.shift(DOWN * 1)
+        
+        # Different lambda values
+        lambdas = [2, 5, 8]
+        colors = [TEAL, BLUE, PURPLE]
+        
+        # Animation
+        self.play(Write(title), run_time=1)
+        self.play(Write(formula), run_time=1.5)
+        self.play(Create(axes), run_time=1)
+        
+        for lam, color in zip(lambdas, colors):
+            # Create bar chart
+            bars = VGroup()
+            for k in range(15):
+                prob = stats.poisson.pmf(k, lam)
+                if prob > 0.01:  # Only show significant probabilities
+                    bar = Rectangle(
+                        width=0.08,
+                        height=axes.y_length * prob / 0.4,
+                        color=color,
+                        fill_opacity=0.8,
+                        stroke_width=2
+                    )
+                    bar.move_to(axes.c2p(k, prob/2))
+                    bars.add(bar)
+            
+            # Lambda label
+            lambda_label = MathTex(f"\\lambda = {lam}", color=color, font_size=32)
+            lambda_label.next_to(axes, RIGHT, buff=0.5)
+            
+            self.play(
+                LaggedStart(*[Create(bar) for bar in bars]),
+                Write(lambda_label),
+                lag_ratio=0.05,
+                run_time=2
+            )
+            self.wait(1)
+            
+            if lam != lambdas[-1]:  # Don't fade out the last one
+                self.play(FadeOut(bars), FadeOut(lambda_label), run_time=0.5)
+        
+        # Add context
+        context_text = Text("Events per time period", font_size=24, color=WHITE)
+        context_text.next_to(axes, DOWN, buff=0.5)
+        self.play(Write(context_text), run_time=1)
+        
+        self.wait(1.5)
+
+# 6. Gamma Distribution
+class GammaDistributionReel(Scene):
+    def construct(self):
+        self.camera.frame_height = 14
+        self.camera.frame_width = 14 * 9/16
+        
+        title = Text("Gamma Distribution", font_size=48, weight=BOLD)
+        title.set_color_by_gradient(ORANGE, RED)
+        title.to_edge(UP, buff=0.5)
+        
+        formula = MathTex(r"f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x}")
+        formula.set_color(WHITE).scale(0.7)
+        formula.next_to(title, DOWN, buff=0.3)
+        
+        axes = Axes(
+            x_range=[0, 10, 1],
+            y_range=[0, 0.5, 0.1],
+            x_length=6,
+            y_length=4,
+            axis_config={"color": WHITE, "stroke_width": 2}
+        )
+        axes.shift(DOWN * 1)
+        
+        # Different parameter combinations
+        params = [(1, 1), (2, 1), (3, 1), (2, 2)]
+        colors = [ORANGE, RED, PURPLE, YELLOW]
+        
+        curves = VGroup()
+        areas = VGroup()
+        labels = VGroup()
+        
+        for i, ((alpha, beta), color) in enumerate(zip(params, colors)):
+            curve = axes.plot(
+                lambda x: stats.gamma.pdf(x, alpha, scale=1/beta),
+                x_range=[0.01, 10],
+                color=color,
+                stroke_width=4
+            )
+            
+            area = axes.get_area(
+                curve,
+                x_range=[0.01, 10],
+                color=color,
+                opacity=0.2
+            )
+            
+            label = MathTex(f"\\alpha={alpha}, \\beta={beta}", color=color, font_size=24)
+            label.move_to(axes.c2p(7, 0.4 - i*0.06))
+            
+            curves.add(curve)
+            areas.add(area)
+            labels.add(label)
+        
+        # Animation
+        self.play(Write(title), run_time=1)
+        self.play(Write(formula), run_time=2)
+        self.play(Create(axes), run_time=1)
+        
+        # Show all curves together with staggered animation
+        self.play(
+            LaggedStart(*[Create(curve) for curve in curves]),
+            LaggedStart(*[FadeIn(area) for area in areas]),
+            LaggedStart(*[Write(label) for label in labels]),
+            lag_ratio=0.3,
+            run_time=3
+        )
+        
+        # Add relationship note
+        relation_text = Text("Generalizes Exponential", font_size=24, color=WHITE)
+        relation_text.next_to(axes, DOWN, buff=0.5)
+        self.play(Write(relation_text), run_time=1)
+        
+        self.wait(1.5)
+
+
+
+
+
+
+
+
+
+
+
 
 class DoubleExponentialLRT(Scene):
     def construct(self):
@@ -132,7 +777,7 @@ class DoubleExponentialLRT(Scene):
         self.play(FadeOut(test_group))
         
         # UMP explanation (Text for titles/explanations, MathTex for math)
-        ump_title = Text("Uniformly Most Powerful", font_size=28, color=GREEN, weight=BOLD)
+        ump_title = Text("Most Powerful", font_size=28, color=GREEN, weight=BOLD)
         ump_title.next_to(title_group, DOWN, buff=0.5)
 
         # Neyman-Pearson lemma
