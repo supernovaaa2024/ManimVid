@@ -20,7 +20,7 @@ class NormalDistributionReel(Scene):
         # Title
         title = Text("Normal Distribution", font_size=48, weight=BOLD)
         title.set_color_by_gradient(BLUE, TEAL)
-        title.to_edge(UP, buff=0.5)
+        title.to_edge(UP, buff=1.2)
         
         # Mathematical formula
         formula = MathTex(r"f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}")
@@ -295,77 +295,545 @@ from manim import *
 import numpy as np
 from scipy import stats
 
-
+# manim -pql Stats.py UniformDistributionReel
 # 2. Uniform Distribution
 class UniformDistributionReel(Scene):
     def construct(self):
         self.camera.frame_height = 14
         self.camera.frame_width = 14 * 9/16
         
-        title = Text("Uniform Distribution", font_size=48, weight=BOLD)
+        # Simple title without hook
+        main_title = Text("Visualizing Uniform Distribution", 
+                         font_size=28, color=YELLOW, weight=BOLD, font="Arial")
+        main_title.move_to(ORIGIN)
+        
+        self.play(Write(main_title), run_time=2)
+        self.wait(1)
+        
+        # Clear title for main content
+        self.play(FadeOut(main_title), run_time=1)
+        
+        # Start with uniform distribution concepts FIRST
+        title = Text("Uniform Distribution", font_size=32, weight=BOLD)
         title.set_color_by_gradient(GREEN, BLUE)
-        title.to_edge(UP, buff=0.5)
+        title.to_edge(UP, buff=1.8)
         
-        formula = MathTex(r"f(x) = \begin{cases} \frac{1}{b-a} & \text{if } a \leq x \leq b \\ 0 & \text{otherwise} \end{cases}")
-        formula.set_color(WHITE).scale(0.7)
-        formula.next_to(title, DOWN, buff=0.3)
+        # Key concept text - introduce first
+        concept_text = Text("Continuous Uniform Distribution", font_size=20, color=YELLOW, weight=BOLD, font="Arial")
+        concept_text.next_to(title, DOWN, buff=0.3)
         
-        axes = Axes(
-            x_range=[-1, 5, 1],
-            y_range=[0, 0.6, 0.1],
-            x_length=6,
-            y_length=4,
-            axis_config={"color": WHITE, "stroke_width": 2}
+        # PDF integrates to 1 text - fundamental concept
+        area_text = Text("PDF integrates to 1, Probability ∝ Area", font_size=16, color=WHITE, font="Arial")
+        area_text.next_to(concept_text, DOWN, buff=0.3)
+        
+        # Mathematical definition - show early
+        formula = MathTex(
+            r"f(x) = \begin{cases} \frac{1}{b-a} & a \leq x \leq b \\ 0 & \text{otherwise} \end{cases}",
+            font_size=18
         )
-        axes.shift(DOWN * 1)
+        formula.set_color(WHITE)
+        formula.next_to(area_text, DOWN, buff=0.3)
         
-        # Create uniform distribution rectangle
-        a, b = 1, 4
-        height = 1/(b-a)
+        # Mean and variance formulas
+        mean_var = MathTex(
+            r"\mu = \frac{a+b}{2}, \quad \sigma^2 = \frac{(b-a)^2}{12}",
+            font_size=16
+        )
+        mean_var.set_color(BLUE)
+        mean_var.next_to(formula, DOWN, buff=0.3)
         
-        # Rectangle
+        # Animate core concepts first
+        self.play(Write(title), run_time=1)
+        self.play(Write(concept_text), run_time=1)
+        self.play(Write(area_text), run_time=1)
+        self.play(Write(formula), run_time=1.5)
+        self.play(Write(mean_var), run_time=1.2)
+        self.wait(0.8)
+        
+        # Now show different geometric shapes to demonstrate the concept
+        shapes_group = VGroup()
+        
+        # Rectangle (classic uniform distribution)
         rect = Rectangle(
-            width=axes.x_length * (b-a)/6,
-            height=axes.y_length * height/0.6,
-            color=GREEN,
-            fill_opacity=0.6,
+            width=1.8, height=0.9,
+            color=GREEN, fill_opacity=0.7,
+            stroke_width=3
+        )
+        rect.shift(LEFT * 2.8)
+        rect_label = Text("Rectangle", font_size=18, color=GREEN).next_to(rect, DOWN, buff=0.3)
+        
+        # Circle
+        circle = Circle(
+            radius=0.5,  # Area = π * 0.5² ≈ 0.78
+            color=BLUE, fill_opacity=0.7,
+            stroke_width=3
+        )
+        circle.shift(UP * 0)
+        circle_label = Text("Circle", font_size=18, color=BLUE).next_to(circle, DOWN, buff=0.3)
+        
+        # Triangle
+        triangle = Polygon(
+            [-0.45, -0.6, 0], [0.45, -0.6, 0], [0, 0.6, 0],  # Smaller triangle
+            color=RED, fill_opacity=0.7,
+            stroke_width=3
+        )
+        triangle.shift(RIGHT * 2.8)
+        triangle_label = Text("Triangle", font_size=18, color=RED).next_to(triangle, DOWN, buff=0.3)
+        
+        shapes_group.add(rect, rect_label, circle, circle_label, triangle, triangle_label)
+        shapes_group.next_to(mean_var, DOWN, buff=0.4)
+        
+        # Animate shapes appearing
+        self.play(
+            LaggedStart(
+                Create(rect), Write(rect_label),
+                Create(circle), Write(circle_label),
+                Create(triangle), Write(triangle_label),
+                lag_ratio=0.3
+            ),
+            run_time=3
+        )
+        
+        # Probability explanation
+        prob_text = Text("Equal area regions have equal probability", 
+                        font_size=14, color=WHITE, font="Arial")
+        prob_text.next_to(shapes_group, DOWN, buff=0.4)
+        self.play(Write(prob_text), run_time=1.5)
+        
+        # Show uniform sampling points
+        sample_points = VGroup()
+        
+        # Add sample points to each shape
+        for shape, color in [(rect, GREEN), (circle, BLUE), (triangle, RED)]:
+            for _ in range(6):  # Reduced number of points
+                if shape == rect:
+                    point_x = np.random.uniform(-0.9, 0.9)
+                    point_y = np.random.uniform(-0.45, 0.45)
+                    point = Dot([point_x, point_y, 0], color=color, radius=0.05)
+                    point.shift(shape.get_center())
+                elif shape == circle:
+                    # Sample uniformly inside circle
+                    r = np.sqrt(np.random.uniform(0, 1)) * 0.5
+                    theta = np.random.uniform(0, 2*np.pi)
+                    point_x = r * np.cos(theta)
+                    point_y = r * np.sin(theta)
+                    point = Dot([point_x, point_y, 0], color=color, radius=0.05)
+                    point.shift(shape.get_center())
+                else:  # triangle
+                    # Sample uniformly inside triangle using barycentric coordinates
+                    u, v = np.random.uniform(0, 1, 2)
+                    if u + v > 1:
+                        u, v = 1 - u, 1 - v
+                    w = 1 - u - v
+                    vertices = [[-0.45, -0.6, 0], [0.45, -0.6, 0], [0, 0.6, 0]]
+                    point_pos = u * np.array(vertices[0]) + v * np.array(vertices[1]) + w * np.array(vertices[2])
+                    point = Dot(point_pos, color=color, radius=0.05)
+                    point.shift(shape.get_center())
+                
+                sample_points.add(point)
+        
+        self.play(
+            LaggedStart(*[Create(point) for point in sample_points], lag_ratio=0.1),
+            run_time=2
+        )
+        
+        # Clear some space and add detailed explanation
+        self.wait(0.5)
+        
+        # Key principle with formula
+        principle_text = Text("Probability ∝ Area", font_size=16, color=YELLOW, weight=BOLD, font="Arial")
+        principle_text.next_to(prob_text, DOWN, buff=0.3)
+        self.play(Write(principle_text), run_time=1)
+        
+        # Probability formula for regions
+        prob_formula = MathTex(
+            r"P(A) = \frac{\text{Area}(A)}{\text{Area}(\text{whole shape})}",
+            font_size=14
+        )
+        prob_formula.set_color(WHITE)
+        prob_formula.next_to(principle_text, DOWN, buff=0.2)
+        self.play(Write(prob_formula), run_time=1.5)
+        
+        # Equal area = equal probability
+        equal_area_text = Text("Equal area regions → Equal probability", 
+                             font_size=12, color=BLUE, font="Arial")
+        equal_area_text.next_to(prob_formula, DOWN, buff=0.2)
+        self.play(Write(equal_area_text), run_time=1)
+        
+        # Critical insight about points
+        point_zero_text = Text("Single points have ZERO probability!", 
+                             font_size=14, color=RED, weight=BOLD, font="Arial")
+        point_zero_text.next_to(equal_area_text, DOWN, buff=0.3)
+        self.play(Write(point_zero_text), run_time=1.5)
+        
+        # Explanation of dots
+        dots_explanation = Text("Dots = finite sampling for visualization only", 
+                              font_size=10, color=GRAY, font="Arial")
+        dots_explanation.next_to(point_zero_text, DOWN, buff=0.2)
+        self.play(Write(dots_explanation), run_time=1)
+        
+        # Continuous vs discrete summary
+        continuous_summary = Text("Continuous: Density per unit area constant", 
+                                font_size=12, color=GREEN, font="Arial")
+        continuous_summary.next_to(dots_explanation, DOWN, buff=0.2)
+        self.play(Write(continuous_summary), run_time=1)
+        
+        discrete_summary = Text("Discrete: Each dot equally likely", 
+                               font_size=12, color=ORANGE, font="Arial")
+        discrete_summary.next_to(continuous_summary, DOWN, buff=0.15)
+        self.play(Write(discrete_summary), run_time=1)
+        
+        self.wait(1)
+        
+        # Clear explanations and show use cases
+        self.play(
+            FadeOut(principle_text), FadeOut(prob_formula), 
+            FadeOut(equal_area_text), FadeOut(point_zero_text),
+            FadeOut(dots_explanation), FadeOut(continuous_summary),
+            FadeOut(discrete_summary), run_time=1
+        )
+        
+        # USE CASES SECTION
+        use_cases_title = Text("Real-World Applications", font_size=20, color=GOLD, weight=BOLD, font="Arial")
+        use_cases_title.next_to(prob_text, DOWN, buff=0.4)
+        self.play(Write(use_cases_title), run_time=1)
+        
+        # Use case 1: Random number generation
+        use_case_1 = Text("🎲 Random Number Generators", font_size=14, color=BLUE, font="Arial")
+        use_case_1.next_to(use_cases_title, DOWN, buff=0.2)
+        self.play(Write(use_case_1), run_time=1)
+        
+        # Use case 2: Simulation
+        use_case_2 = Text("⚡ Monte Carlo Simulations", font_size=14, color=GREEN, font="Arial")
+        use_case_2.next_to(use_case_1, DOWN, buff=0.15)
+        self.play(Write(use_case_2), run_time=1)
+        
+        # Use case 3: Modeling
+        use_case_3 = Text("📊 Modeling Unknown Systems", font_size=14, color=PURPLE, font="Arial")
+        use_case_3.next_to(use_case_2, DOWN, buff=0.15)
+        self.play(Write(use_case_3), run_time=1)
+        
+        # Use case 4: Gaming
+        use_case_4 = Text("🎮 Fair Gaming & Lottery Systems", font_size=14, color=RED, font="Arial")
+        use_case_4.next_to(use_case_3, DOWN, buff=0.15)
+        self.play(Write(use_case_4), run_time=1)
+        
+        # Use case 5: Statistics
+        use_case_5 = Text("📈 Statistical Testing & Sampling", font_size=14, color=ORANGE, font="Arial")
+        use_case_5.next_to(use_case_4, DOWN, buff=0.15)
+        self.play(Write(use_case_5), run_time=1)
+        
+        self.wait(2)
+
+# manim -pql Stats.py CentralLimitTheoremMagic
+class CentralLimitTheoremMagic(Scene):
+    def construct(self):
+        # Configure for Instagram Reels (9:16 aspect ratio)
+        self.camera.frame_height = 14
+        self.camera.frame_width = 14 * 9/16
+        
+        # Title with Dynamic Island spacing
+        main_title = Text("Central Limit Theorem", font_size=32, weight=BOLD, font="Arial")
+        main_title.set_color_by_gradient(PURPLE, PINK)
+        main_title.to_edge(UP, buff=1.8)  # Extra buff for Dynamic Island
+        
+        subtitle = Text("The Magic of Statistics", font_size=24, color=YELLOW, weight=BOLD, font="Arial")
+        subtitle.next_to(main_title, DOWN, buff=0.3)
+        
+        self.play(Write(main_title), run_time=1.5)
+        self.play(Write(subtitle), run_time=1)
+        self.wait(1)
+        
+        # Hook: Start with a weird distribution
+        hook_text = Text("Start with ANY weird distribution...", font_size=20, color=WHITE, font="Arial")
+        hook_text.next_to(subtitle, DOWN, buff=0.5)
+        self.play(Write(hook_text), run_time=1.5)
+        
+        # Create original distribution (bimodal for maximum "weirdness")
+        original_axes = Axes(
+            x_range=[-4, 4, 1],
+            y_range=[0, 0.4, 0.1],
+            x_length=5,
+            y_length=2.5,
+            axis_config={"color": WHITE, "stroke_width": 2}
+        ).scale(0.8)
+        original_axes.next_to(hook_text, DOWN, buff=0.3)
+        
+        # Bimodal distribution (mixture of two normals)
+        def bimodal_dist(x):
+            return 0.3 * (np.exp(-(x+1.5)**2/0.5) + np.exp(-(x-1.5)**2/0.5))
+        
+        original_curve = original_axes.plot(
+            bimodal_dist,
+            x_range=[-4, 4],
+            color=RED,
             stroke_width=4
         )
-        rect.move_to(axes.c2p((a+b)/2, height/2))
         
-        # Vertical lines at boundaries
-        left_line = axes.get_vertical_line(axes.c2p(a, height), color=GREEN, stroke_width=4)
-        right_line = axes.get_vertical_line(axes.c2p(b, height), color=GREEN, stroke_width=4)
-        
-        # Parameter labels
-        a_label = MathTex("a", color=GREEN).next_to(axes.c2p(a, 0), DOWN)
-        b_label = MathTex("b", color=GREEN).next_to(axes.c2p(b, 0), DOWN)
-        height_label = MathTex(r"\frac{1}{b-a}", color=GREEN).next_to(rect, RIGHT)
-        
-        # Animation
-        self.play(Write(title), run_time=1)
-        self.play(Write(formula), run_time=2)
-        self.play(Create(axes), run_time=1)
-        self.play(
-            Create(rect),
-            Create(left_line),
-            Create(right_line),
-            run_time=1.5
+        original_area = original_axes.get_area(
+            original_curve,
+            x_range=[-4, 4],
+            color=RED,
+            opacity=0.3
         )
+        
+        original_label = Text("Weird Bimodal Distribution", font_size=16, color=RED, font="Arial")
+        original_label.next_to(original_axes, DOWN, buff=0.2)
+        
+        self.play(Create(original_axes), run_time=1)
+        self.play(Create(original_curve), FadeIn(original_area), run_time=1.5)
+        self.play(Write(original_label), run_time=1)
+        
+        # Add some sample points to show the original distribution
+        sample_dots = VGroup()
+        np.random.seed(42)  # For reproducibility
+        for _ in range(20):
+            # Generate bimodal samples
+            if np.random.random() < 0.5:
+                x_val = np.random.normal(-1.5, 0.7)
+            else:
+                x_val = np.random.normal(1.5, 0.7)
+            
+            if -4 <= x_val <= 4:
+                y_val = bimodal_dist(x_val) + np.random.uniform(-0.02, 0.02)
+                dot = Dot(original_axes.c2p(x_val, y_val), color=RED, radius=0.03)
+                sample_dots.add(dot)
+        
         self.play(
-            Write(a_label),
-            Write(b_label),
-            Write(height_label),
+            LaggedStart(*[Create(dot) for dot in sample_dots], lag_ratio=0.1),
+            run_time=2
+        )
+        self.wait(1)
+        
+        # Magic announcement
+        magic_text = Text("✨ Watch the MAGIC happen! ✨", font_size=22, color=GOLD, weight=BOLD, font="Arial")
+        magic_text.next_to(original_label, DOWN, buff=0.4)
+        self.play(Write(magic_text), run_time=1.5)
+        self.wait(0.5)
+        
+        # Clear for CLT demonstration
+        self.play(
+            FadeOut(VGroup(hook_text, original_axes, original_curve, original_area, 
+                          original_label, sample_dots, magic_text)),
             run_time=1
         )
         
-        # Highlight equal probability
-        equal_text = Text("Equal Probability", font_size=32, color=GREEN)
-        equal_text.next_to(axes, DOWN, buff=0.5)
-        self.play(Write(equal_text), run_time=1)
+        # CLT Explanation
+        clt_explanation = Text("Sample means approach normal distribution", 
+                              font_size=18, color=WHITE, font="Arial")
+        clt_explanation.next_to(subtitle, DOWN, buff=0.3)
+        self.play(Write(clt_explanation), run_time=1.5)
+        
+        # Set up side-by-side comparison
+        # Left: Original distribution, Right: Sample means distribution
+        left_title = Text("Original Distribution", font_size=16, color=RED, font="Arial")
+        left_title.move_to([-2.5, 2, 0])
+        
+        right_title = Text("Sample Means", font_size=16, color=BLUE, font="Arial")
+        right_title.move_to([2.5, 2, 0])
+        
+        self.play(Write(left_title), Write(right_title), run_time=1)
+        
+        # Create axes for both distributions
+        left_axes = Axes(
+            x_range=[-4, 4, 2],
+            y_range=[0, 0.4, 0.2],
+            x_length=3,
+            y_length=2,
+            axis_config={"color": WHITE, "stroke_width": 1}
+        )
+        left_axes.move_to([-2.5, 1, 0])
+        
+        right_axes = Axes(
+            x_range=[-2, 2, 1],
+            y_range=[0, 1.5, 0.5],
+            x_length=3,
+            y_length=2,
+            axis_config={"color": WHITE, "stroke_width": 1}
+        )
+        right_axes.move_to([2.5, 1, 0])
+        
+        self.play(Create(left_axes), Create(right_axes), run_time=1)
+        
+        # Show original distribution on left
+        left_curve = left_axes.plot(bimodal_dist, x_range=[-4, 4], color=RED, stroke_width=3)
+        left_area = left_axes.get_area(left_curve, x_range=[-4, 4], color=RED, opacity=0.3)
+        
+        self.play(Create(left_curve), FadeIn(left_area), run_time=1)
+        
+        # Animate sampling process with increasing sample sizes
+        sample_sizes = [1, 2, 5, 10, 30]
+        colors = [ORANGE, YELLOW, GREEN, BLUE, PURPLE]
+        
+        sample_means_data = []
+        
+        for i, (n, color) in enumerate(zip(sample_sizes, colors)):
+            # Generate sample means
+            np.random.seed(42 + i)  # Different seed for each sample size
+            means = []
+            
+            for _ in range(1000):  # 1000 sample means
+                # Generate n samples from bimodal distribution
+                samples = []
+                for _ in range(n):
+                    if np.random.random() < 0.5:
+                        sample = np.random.normal(-1.5, 0.7)
+                    else:
+                        sample = np.random.normal(1.5, 0.7)
+                    samples.append(sample)
+                
+                sample_mean = np.mean(samples)
+                if -2 <= sample_mean <= 2:  # Keep within range
+                    means.append(sample_mean)
+            
+            sample_means_data.append((means, color, n))
+            
+            # Show sample size
+            n_text = Text(f"Sample Size: n = {n}", font_size=18, color=color, weight=BOLD, font="Arial")
+            n_text.next_to(clt_explanation, DOWN, buff=0.3)
+            
+            if i > 0:
+                self.play(Transform(prev_n_text, n_text), run_time=0.5)
+            else:
+                self.play(Write(n_text), run_time=0.5)
+                prev_n_text = n_text
+            
+            # Create histogram of sample means
+            hist_bars = VGroup()
+            
+            # Calculate histogram
+            hist, bin_edges = np.histogram(means, bins=20, range=(-2, 2), density=True)
+            bin_width = bin_edges[1] - bin_edges[0]
+            
+            for j, (height, edge) in enumerate(zip(hist, bin_edges[:-1])):
+                if height > 0:
+                    bar_height = height * 0.8  # Scale for visibility
+                    bar = Rectangle(
+                        width=bin_width * right_axes.x_length / 4,  # Scale to axes
+                        height=bar_height * right_axes.y_length / 1.5,
+                        color=color,
+                        fill_opacity=0.7,
+                        stroke_width=1
+                    )
+                    bar_center_x = edge + bin_width/2
+                    bar.move_to(right_axes.c2p(bar_center_x, bar_height/2))
+                    hist_bars.add(bar)
+            
+            # Animate the histogram
+            if i == 0:
+                self.play(
+                    LaggedStart(*[Create(bar) for bar in hist_bars], lag_ratio=0.02),
+                    run_time=1.5
+                )
+                prev_hist = hist_bars
+            else:
+                self.play(
+                    Transform(prev_hist, hist_bars),
+                    run_time=1.2
+                )
+            
+            # Add normal curve overlay for larger sample sizes
+            if n >= 10:
+                # Calculate sample mean and standard error
+                sample_mean = np.mean(means)
+                sample_std = np.std(means)
+                
+                def normal_overlay(x):
+                    return (1/(sample_std * np.sqrt(2*np.pi))) * np.exp(-0.5*((x-sample_mean)/sample_std)**2)
+                
+                normal_curve = right_axes.plot(
+                    normal_overlay,
+                    x_range=[-2, 2],
+                    color=WHITE,
+                    stroke_width=3
+                )
+                
+                if n == 10:
+                    self.play(Create(normal_curve), run_time=1)
+                    prev_normal = normal_curve
+                else:
+                    self.play(Transform(prev_normal, normal_curve), run_time=1)
+            
+            self.wait(0.8)
+        
+        # Final revelation
+        self.play(FadeOut(prev_n_text), run_time=0.5)
+        
+        # Clear everything first to make space
+        self.play(
+            FadeOut(VGroup(left_title, right_title, left_axes, right_axes, 
+                          left_curve, left_area, prev_hist)),
+            run_time=1
+        )
+        
+        revelation_text = Text("🎯 NORMAL DISTRIBUTION!", font_size=22, color=GOLD, weight=BOLD, font="Arial")
+        revelation_text.next_to(clt_explanation, DOWN, buff=0.5)
+        self.play(Write(revelation_text), run_time=1.5)
+        
+        # Key insights - more compact
+        insights = [
+            "• ANY distribution → Normal sample means",
+            "• Larger n → More normal shape",
+            "• Mean stays the same",
+            "• Spread decreases by 1/√n"
+        ]
+        
+        insight_group = VGroup()
+        for insight in insights:
+            insight_text = Text(insight, font_size=12, color=WHITE, font="Arial")
+            insight_group.add(insight_text)
+        
+        insight_group.arrange(DOWN, buff=0.1, aligned_edge=LEFT)
+        insight_group.next_to(revelation_text, DOWN, buff=0.3)
+        
+        for insight in insight_group:
+            self.play(Write(insight), run_time=0.6)
+        
+        # Final formula - smaller and more compact
+        clt_formula = MathTex(
+            r"\bar{X} \sim N\left(\mu, \frac{\sigma}{\sqrt{n}}\right)",
+            font_size=18,
+            color=YELLOW
+        )
+        clt_formula.next_to(insight_group, DOWN, buff=0.3)
+        
+        formula_box = SurroundingRectangle(clt_formula, color=YELLOW, buff=0.15)
+        
+        self.play(Write(clt_formula), run_time=1.5)
+        self.play(Create(formula_box), run_time=1)
+        
+        # Sparkle finale - smaller and more controlled
+        sparkles = VGroup()
+        for _ in range(12):  # Fewer sparkles
+            sparkle = Star(
+                n=4,
+                outer_radius=0.06,
+                inner_radius=0.03,
+                color=random_bright_color(),
+                fill_opacity=0.8
+            )
+            sparkle.move_to([
+                np.random.uniform(-2.5, 2.5),  # Smaller range
+                np.random.uniform(-1, 2),      # More controlled vertical range
+                0
+            ])
+            sparkles.add(sparkle)
+        
+        self.play(
+            LaggedStart(*[FadeIn(sparkle) for sparkle in sparkles]),
+            lag_ratio=0.1,
+            run_time=1.2
+        )
+        
+        self.play(
+            LaggedStart(*[FadeOut(sparkle) for sparkle in sparkles]),
+            lag_ratio=0.05,
+            run_time=0.8
+        )
         
         self.wait(1.5)
 
+# manim -pql Stats.py 
 # 3. Exponential Distribution
 class ExponentialDistributionReel(Scene):
     def construct(self):
@@ -374,7 +842,7 @@ class ExponentialDistributionReel(Scene):
         
         title = Text("Exponential Distribution", font_size=48, weight=BOLD)
         title.set_color_by_gradient(RED, ORANGE)
-        title.to_edge(UP, buff=0.5)
+        title.to_edge(UP, buff=1.2)
         
         formula = MathTex(r"f(x) = \lambda e^{-\lambda x}, \quad x \geq 0")
         formula.set_color(WHITE).scale(0.8)
@@ -441,6 +909,7 @@ class ExponentialDistributionReel(Scene):
         
         self.wait(1.5)
 
+# manim -pql Stats.py
 # 4. Beta Distribution
 class BetaDistributionReel(Scene):
     def construct(self):
@@ -449,7 +918,7 @@ class BetaDistributionReel(Scene):
         
         title = Text("Beta Distribution", font_size=48, weight=BOLD)
         title.set_color_by_gradient(PURPLE, PINK)
-        title.to_edge(UP, buff=0.5)
+        title.to_edge(UP, buff=1.2)
         
         formula = MathTex(r"f(x) = \frac{x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha,\beta)}, \quad 0 \leq x \leq 1")
         formula.set_color(WHITE).scale(0.7)
@@ -510,7 +979,7 @@ class PoissonDistributionReel(Scene):
         
         title = Text("Poisson Distribution", font_size=48, weight=BOLD)
         title.set_color_by_gradient(TEAL, BLUE)
-        title.to_edge(UP, buff=0.5)
+        title.to_edge(UP, buff=1.2)
         
         formula = MathTex(r"P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}")
         formula.set_color(WHITE).scale(0.8)
@@ -580,7 +1049,7 @@ class GammaDistributionReel(Scene):
         
         title = Text("Gamma Distribution", font_size=48, weight=BOLD)
         title.set_color_by_gradient(ORANGE, RED)
-        title.to_edge(UP, buff=0.5)
+        title.to_edge(UP, buff=1.2)
         
         formula = MathTex(r"f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x}")
         formula.set_color(WHITE).scale(0.7)
@@ -667,7 +1136,7 @@ class DoubleExponentialLRT(Scene):
         title = Text("Likelihood Ratio Test", font_size=36, color=BLUE)
         subtitle = Text("Double Exponential Distribution", font_size=24)
         title_group = VGroup(title, subtitle).arrange(DOWN, buff=0.3)
-        title_group.to_edge(UP, buff=0.5)
+        title_group.to_edge(UP, buff=1.2)
         
         self.play(Write(title))
         self.play(Write(subtitle))

@@ -12,6 +12,202 @@ config.frame_width = 9.0
 from manim import *
 import numpy as np
 
+from manim import *
+import numpy as np
+
+class CircularTableProbability(Scene):
+    def construct(self):
+        # Title
+        title = Text("7 People Around a Circular Table", font_size=48)
+        subtitle = Text("Probability of Age Order", font_size=32)
+        title_group = VGroup(title, subtitle).arrange(DOWN, buff=0.3)
+        
+        self.play(Write(title_group))
+        self.wait(1)
+        self.play(title_group.animate.scale(0.7).to_edge(UP))
+        
+        # Draw circular table
+        table = Circle(radius=2.5, color=BROWN, fill_opacity=0.3)
+        table_center = Dot(ORIGIN, color=BROWN)
+        
+        self.play(Create(table), Create(table_center))
+        
+        # Create 7 seats around the table
+        seats = []
+        people_labels = []
+        ages = [1, 2, 3, 4, 5, 6, 7]  # Ages from youngest to oldest
+        
+        for i in range(7):
+            angle = i * 2 * PI / 7 - PI/2  # Start from top
+            pos = 2.5 * np.array([np.cos(angle), np.sin(angle), 0])
+            
+            seat = Circle(radius=0.25, color=WHITE, fill_opacity=0.8)
+            seat.move_to(pos)
+            seats.append(seat)
+            
+            # Initially place people randomly
+            random_age = ages[i]
+            person = Text(str(random_age), font_size=24, color=BLACK)
+            person.move_to(pos)
+            people_labels.append(person)
+        
+        # Show initial random arrangement
+        self.play(*[Create(seat) for seat in seats])
+        self.play(*[Write(person) for person in people_labels])
+        
+        problem_text = Text("All have distinct ages. What's the probability\nthey sit in age order?", 
+                          font_size=28).to_edge(DOWN)
+        self.play(Write(problem_text))
+        self.wait(2)
+        
+        # Clear problem text
+        self.play(FadeOut(problem_text))
+        
+        # Show what "age order" means
+        explanation = Text("Age order means: consecutive ages around the circle", 
+                         font_size=28).to_edge(DOWN)
+        self.play(Write(explanation))
+        self.wait(2)
+        
+        # Animate to first valid arrangement (clockwise)
+        self.play(FadeOut(explanation))
+        clockwise_text = Text("Arrangement 1: Clockwise increasing", 
+                            font_size=28).to_edge(DOWN)
+        self.play(Write(clockwise_text))
+        
+        # Rearrange to clockwise order: 1,2,3,4,5,6,7
+        new_labels_cw = []
+        for i in range(7):
+            new_label = Text(str(i+1), font_size=24, color=BLUE)
+            new_label.move_to(seats[i].get_center())
+            new_labels_cw.append(new_label)
+        
+        self.play(*[Transform(people_labels[i], new_labels_cw[i]) for i in range(7)])
+        
+        # Draw arrows to show clockwise direction
+        arrows = []
+        for i in range(7):
+            start_angle = i * 2 * PI / 7 - PI/2
+            end_angle = (i+1) * 2 * PI / 7 - PI/2
+            
+            start_pos = 2.8 * np.array([np.cos(start_angle), np.sin(start_angle), 0])
+            end_pos = 2.8 * np.array([np.cos(end_angle), np.sin(end_angle), 0])
+            
+            # Create curved arrow
+            arc = ArcBetweenPoints(start_pos, end_pos, angle=2*PI/7)
+            arrow = Arrow(start_pos, end_pos, color=GREEN, buff=0)
+            arrows.append(arrow)
+        
+        self.play(*[Create(arrow) for arrow in arrows])
+        self.wait(2)
+        self.play(*[FadeOut(arrow) for arrow in arrows])
+        
+        # Show second valid arrangement (counter-clockwise)
+        self.play(FadeOut(clockwise_text))
+        ccw_text = Text("Arrangement 2: Counter-clockwise increasing", 
+                       font_size=28).to_edge(DOWN)
+        self.play(Write(ccw_text))
+        
+        # Rearrange to counter-clockwise order: 1,7,6,5,4,3,2
+        ccw_order = [1, 7, 6, 5, 4, 3, 2]
+        new_labels_ccw = []
+        for i in range(7):
+            new_label = Text(str(ccw_order[i]), font_size=24, color=RED)
+            new_label.move_to(seats[i].get_center())
+            new_labels_ccw.append(new_label)
+        
+        self.play(*[Transform(people_labels[i], new_labels_ccw[i]) for i in range(7)])
+        self.wait(2)
+        
+        # Show calculation
+        self.play(FadeOut(ccw_text))
+        self.play(*[FadeOut(person) for person in people_labels])
+        self.play(FadeOut(table), FadeOut(table_center), *[FadeOut(seat) for seat in seats])
+        
+        # Calculation display
+        calc_title = Text("Calculation:", font_size=36).to_edge(UP, buff=1)
+        
+        numerator_text = Text("Favorable arrangements:", font_size=28)
+        numerator_calc = MathTex(r"7 \text{ choices for person 1} \times 2 \text{ directions} = 14")
+        
+        denominator_text = Text("Total arrangements:", font_size=28)
+        denominator_calc = MathTex(r"7! = 5040")
+        
+        probability_text = Text("Probability:", font_size=28)
+        probability_calc = MathTex(r"P = \frac{14}{7!} = \frac{14}{5040} = \frac{1}{360}")
+        
+        calc_group = VGroup(
+            numerator_text, numerator_calc,
+            denominator_text, denominator_calc,
+            probability_text, probability_calc
+        ).arrange(DOWN, buff=0.4, aligned_edge=LEFT)
+        
+        calc_group.next_to(calc_title, DOWN, buff=0.5)
+        
+        self.play(Write(calc_title))
+        self.wait(0.5)
+        
+        self.play(Write(numerator_text))
+        self.play(Write(numerator_calc))
+        self.wait(1)
+        
+        self.play(Write(denominator_text))
+        self.play(Write(denominator_calc))
+        self.wait(1)
+        
+        self.play(Write(probability_text))
+        self.play(Write(probability_calc))
+        self.wait(1)
+        
+        # Highlight final answer
+        answer_box = SurroundingRectangle(probability_calc, color=YELLOW, buff=0.2)
+        self.play(Create(answer_box))
+        
+        final_text = Text("Final Answer: 1/360 ≈ 0.28%", font_size=32, color=YELLOW)
+        final_text.next_to(calc_group, DOWN, buff=0.5)
+        self.play(Write(final_text))
+        
+        self.wait(3)
+
+# Alternative scene showing the intuition more clearly
+class CircularTableIntuition(Scene):
+    def construct(self):
+        title = Text("Why 1/360?", font_size=48)
+        self.play(Write(title))
+        self.wait(1)
+        self.play(title.animate.scale(0.7).to_edge(UP))
+        
+        # Visual representation
+        explanation = VGroup(
+            Text("• Person 1 can sit anywhere: 7 choices", font_size=24),
+            Text("• Others must follow in age order: only 1 way each", font_size=24),
+            Text("• But we can go clockwise OR counter-clockwise: 2 ways", font_size=24),
+            Text("• Total favorable: 7 × 1 × 2 = 14", font_size=24),
+            Text("• Total possible: 7! = 5,040", font_size=24),
+            Text("• Probability: 14/5,040 = 1/360", font_size=24)
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.3)
+        
+        explanation.center()
+        
+        for line in explanation:
+            self.play(Write(line))
+            self.wait(0.8)
+        
+        # Highlight the key insight
+        key_insight = Text("Key insight: Only 2 valid orderings out of all possible arrangements!", 
+                         font_size=28, color=YELLOW)
+        key_insight.to_edge(DOWN)
+        
+        self.play(Write(key_insight))
+        self.wait(3)
+
+if __name__ == "__main__":
+    # To render, use: manim -pql script_name.py CircularTableProbability
+    pass
+
+#manim -pqh Stats.py UniformDistributionReel
+
+
 class CombinatoriaIdentity(Scene):
     PRIMARY_COLOR = "#FF6B6B"
     SECONDARY_COLOR = "#4ECDC4"
