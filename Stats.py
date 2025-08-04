@@ -251,25 +251,15 @@ class NormalDistributionReel(Scene):
         
         # Add sparkle effects for finale
         sparkles = VGroup()
-        for _ in range(15):
-            sparkle = Star(
-                n=4,
-                outer_radius=0.1,
-                inner_radius=0.05,
-                color=random_bright_color(),
-                fill_opacity=0.8
-            )
-            sparkle.move_to([
-                np.random.uniform(-3, 3),
-                np.random.uniform(-2, 6),
-                0
-            ])
+        for _ in range(12):
+            sparkle = Dot(color=GOLD, radius=0.05)
+            sparkle.move_to([np.random.uniform(-2, 2), np.random.uniform(-1, 1), 0])
             sparkles.add(sparkle)
         
         self.play(
             LaggedStart(*[FadeIn(sparkle) for sparkle in sparkles]),
             lag_ratio=0.1,
-            run_time=1
+            run_time=1.2
         )
         
         self.play(
@@ -525,7 +515,7 @@ class UniformDistributionReel(Scene):
         
         self.wait(2)
 
-# manim -pql Stats.py CentralLimitTheoremMagic
+# manim -pqh Stats.py CentralLimitTheoremMagic
 class CentralLimitTheoremMagic(Scene):
     def construct(self):
         # Configure for Instagram Reels (9:16 aspect ratio)
@@ -540,14 +530,31 @@ class CentralLimitTheoremMagic(Scene):
         subtitle = Text("The Magic of Statistics", font_size=24, color=YELLOW, weight=BOLD, font="Arial")
         subtitle.next_to(main_title, DOWN, buff=0.3)
         
+        # Add assumptions - critical for mathematical accuracy
+        assumptions = Text(
+            "For i.i.d. samples with finite variance",
+            font="Arial",
+            font_size=14,
+            color=GRAY,
+            slant=ITALIC
+        ).next_to(subtitle, DOWN, buff=0.2)
+        
         self.play(Write(main_title), run_time=1.5)
         self.play(Write(subtitle), run_time=1)
+        self.play(FadeIn(assumptions), run_time=0.8)
         self.wait(1)
         
         # Hook: Start with a weird distribution
-        hook_text = Text("Start with ANY weird distribution...", font_size=20, color=WHITE, font="Arial")
-        hook_text.next_to(subtitle, DOWN, buff=0.5)
+        hook_text = Text("Start with ANY* weird distribution...", font_size=20, color=WHITE, font="Arial")
+        hook_text.next_to(assumptions, DOWN, buff=0.4)
+        
+        # Add asterisk clarification
+        asterisk_note = Text("*with finite variance", font_size=12, color=GRAY, font="Arial")
+        asterisk_note.next_to(hook_text, RIGHT, buff=0.2)
+        
         self.play(Write(hook_text), run_time=1.5)
+        self.play(FadeIn(asterisk_note), run_time=0.8)
+        self.wait(0.5)
         
         # Create original distribution (bimodal for maximum "weirdness")
         original_axes = Axes(
@@ -613,15 +620,18 @@ class CentralLimitTheoremMagic(Scene):
         
         # Clear for CLT demonstration
         self.play(
-            FadeOut(VGroup(hook_text, original_axes, original_curve, original_area, 
+            FadeOut(VGroup(hook_text, asterisk_note, original_axes, original_curve, original_area, 
                           original_label, sample_dots, magic_text)),
             run_time=1
         )
         
         # CLT Explanation
-        clt_explanation = Text("Sample means approach normal distribution", 
-                              font_size=18, color=WHITE, font="Arial")
-        clt_explanation.next_to(subtitle, DOWN, buff=0.3)
+        # Position below assumptions to avoid overlap
+        clt_explanation = Text(
+            "Sample means approach normal distribution", 
+            font_size=18, color=WHITE, font="Arial"
+        )
+        clt_explanation.next_to(assumptions, DOWN, buff=0.8)
         self.play(Write(clt_explanation), run_time=1.5)
         
         # Set up side-by-side comparison
@@ -688,15 +698,26 @@ class CentralLimitTheoremMagic(Scene):
             
             sample_means_data.append((means, color, n))
             
-            # Show sample size
+            # Show sample size with convergence information
             n_text = Text(f"Sample Size: n = {n}", font_size=18, color=color, weight=BOLD, font="Arial")
-            n_text.next_to(clt_explanation, DOWN, buff=0.3)
+            
+            # Add convergence quality indicator
+            if n >= 30:
+                convergence_note = Text("✓ Good approximation", font_size=12, color=GREEN, font="Arial")
+            elif n >= 10:
+                convergence_note = Text("~ Fair approximation", font_size=12, color=YELLOW, font="Arial") 
+            else:
+                convergence_note = Text("⚠ Poor approximation", font_size=12, color=ORANGE, font="Arial")
+            
+            n_group = VGroup(n_text, convergence_note)
+            n_group.arrange(DOWN, buff=0.1)
+            n_group.next_to(clt_explanation, DOWN, buff=0.3)
             
             if i > 0:
-                self.play(Transform(prev_n_text, n_text), run_time=0.5)
+                self.play(Transform(prev_n_group, n_group), run_time=0.5)
             else:
-                self.play(Write(n_text), run_time=0.5)
-                prev_n_text = n_text
+                self.play(Write(n_group), run_time=0.5)
+                prev_n_group = n_group
             
             # Create histogram of sample means
             hist_bars = VGroup()
@@ -719,6 +740,24 @@ class CentralLimitTheoremMagic(Scene):
                     bar.move_to(right_axes.c2p(bar_center_x, bar_height/2))
                     hist_bars.add(bar)
             
+            # Calculate theoretical normal curve for comparison
+            theoretical_mean = 0  # Population mean of bimodal distribution
+            theoretical_std = 1.68 / np.sqrt(n)  # Approximate standard error
+            
+            x_vals = np.linspace(-2, 2, 100)
+            y_vals = (1 / (theoretical_std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_vals - theoretical_mean) / theoretical_std) ** 2)
+            
+            # Scale to match histogram scale
+            y_vals = y_vals * 0.8
+            
+            normal_curve = right_axes.plot_line_graph(
+                x_values=x_vals,
+                y_values=y_vals,
+                line_color=RED,
+                stroke_width=3,
+                add_vertex_dots=False
+            )
+            
             # Animate the histogram
             if i == 0:
                 self.play(
@@ -726,9 +765,20 @@ class CentralLimitTheoremMagic(Scene):
                     run_time=1.5
                 )
                 prev_hist = hist_bars
+                
+                # Add theoretical curve for comparison (starts faint)
+                normal_curve.set_stroke(opacity=0.3)
+                self.play(Create(normal_curve), run_time=1)
+                prev_curve = normal_curve
+                
             else:
+                # Increase opacity of normal curve as n increases
+                curve_opacity = min(0.9, 0.3 + (i * 0.15))
+                normal_curve.set_stroke(opacity=curve_opacity)
+                
                 self.play(
                     Transform(prev_hist, hist_bars),
+                    Transform(prev_curve, normal_curve),
                     run_time=1.2
                 )
             
@@ -757,66 +807,70 @@ class CentralLimitTheoremMagic(Scene):
             self.wait(0.8)
         
         # Final revelation
-        self.play(FadeOut(prev_n_text), run_time=0.5)
+        self.play(FadeOut(prev_n_group), run_time=0.5)
         
-        # Clear everything first to make space
+        # Add all persistent text elements to clear list  
+        elements_to_clear = [main_title, subtitle, left_title, right_title, left_axes, right_axes, 
+                           left_curve, left_area, prev_hist, prev_curve, clt_explanation, assumptions]
+        
+        # Add prev_normal if it exists (for n >= 10)
+        try:
+            elements_to_clear.append(prev_normal)
+        except:
+            pass
+            
         self.play(
-            FadeOut(VGroup(left_title, right_title, left_axes, right_axes, 
-                          left_curve, left_area, prev_hist)),
+            FadeOut(VGroup(*elements_to_clear)),
             run_time=1
         )
         
+        # Position revelation text at very top after clearing everything
         revelation_text = Text("🎯 NORMAL DISTRIBUTION!", font_size=22, color=GOLD, weight=BOLD, font="Arial")
-        revelation_text.next_to(clt_explanation, DOWN, buff=0.5)
+        revelation_text.move_to([0, 5.5, 0])  # Higher position since we cleared titles
         self.play(Write(revelation_text), run_time=1.5)
         
-        # Key insights - more compact
+        # Key insights - mathematically precise, smaller font
         insights = [
-            "• ANY distribution → Normal sample means",
-            "• Larger n → More normal shape",
-            "• Mean stays the same",
-            "• Spread decreases by 1/√n"
+            "• i.i.d. samples → Normal sample means",
+            "• Convergence rate depends on original shape", 
+            "• Unbiased Estimator: E[X̄] = μ",
+            "• Standard error: SD(X̄) = σ/√n"
         ]
         
         insight_group = VGroup()
         for insight in insights:
-            insight_text = Text(insight, font_size=12, color=WHITE, font="Arial")
+            insight_text = Text(insight, font_size=11, color=WHITE, font="Arial")  # Smaller font
             insight_group.add(insight_text)
         
-        insight_group.arrange(DOWN, buff=0.1, aligned_edge=LEFT)
-        insight_group.next_to(revelation_text, DOWN, buff=0.3)
+        insight_group.arrange(DOWN, buff=0.08, aligned_edge=LEFT)  # Tighter spacing
+        insight_group.next_to(revelation_text, DOWN, buff=0.25)  # Reduced spacing
         
         for insight in insight_group:
-            self.play(Write(insight), run_time=0.6)
+            self.play(Write(insight), run_time=0.8)
         
-        # Final formula - smaller and more compact
+        # Final formula with asymptotic notation - larger and bolder
+        formula_title = Text("Asymptotic Result:", font_size=18, color=GRAY, font="Arial", weight=BOLD)
         clt_formula = MathTex(
-            r"\bar{X} \sim N\left(\mu, \frac{\sigma}{\sqrt{n}}\right)",
-            font_size=18,
-            color=YELLOW
+            r"\bar{X} \xrightarrow{d} N\left(\mu, \frac{\sigma}{\sqrt{n}}\right) \text{ as } n \to \infty",
+            font_size=24, color=YELLOW
         )
-        clt_formula.next_to(insight_group, DOWN, buff=0.3)
         
-        formula_box = SurroundingRectangle(clt_formula, color=YELLOW, buff=0.15)
+        # Add approximation note
+        approx_note = Text("≈ Normal for large n", font_size=16, color=GRAY, font="Arial", weight=BOLD, slant=ITALIC)
         
+        formula_group = VGroup(formula_title, clt_formula, approx_note)
+        formula_group.arrange(DOWN, buff=0.1)  # Adjusted spacing
+        formula_group.next_to(insight_group, DOWN, buff=0.3)  # Increased spacing
+        
+        self.play(Write(formula_title), run_time=0.8)
         self.play(Write(clt_formula), run_time=1.5)
-        self.play(Create(formula_box), run_time=1)
+        self.play(Write(approx_note), run_time=0.8)
         
         # Sparkle finale - smaller and more controlled
         sparkles = VGroup()
-        for _ in range(12):  # Fewer sparkles
-            sparkle = Star(
-                n=4,
-                outer_radius=0.06,
-                inner_radius=0.03,
-                color=random_bright_color(),
-                fill_opacity=0.8
-            )
-            sparkle.move_to([
-                np.random.uniform(-2.5, 2.5),  # Smaller range
-                np.random.uniform(-1, 2),      # More controlled vertical range
-                0
-            ])
+        for _ in range(12):
+            sparkle = Dot(color=GOLD, radius=0.05)
+            sparkle.move_to([np.random.uniform(-2, 2), np.random.uniform(-1, 1), 0])
             sparkles.add(sparkle)
         
         self.play(
@@ -1650,8 +1704,8 @@ class CoinFlipHypothesisTest(Scene):
         # Results
         results = [
             (r"a) \text{ Significance Level: } \alpha = 0.00195", self.PRIMARY_COLOR),
-            (r"b) \text{ Power (p=0.1): } 0.3487", self.SECONDARY_COLOR)
-        ]
+                       (r"b) \text{ Power (p=0.1): } 0.3487", self.SECONDARY_COLOR)
+               ]
         
         result_objects = []
         for i, (result, color) in enumerate(results):
@@ -2209,87 +2263,8 @@ class PoissonLikelihoodRatioTestReel(Scene):
     def construct(self):
 
         # Title
-        title = Text("Likelihood Ratio Test", font_size=64, weight=BOLD)
-        subtitle = Text("Poisson Distribution", font_size=40, color=YELLOW)
-        title_group = VGroup(title, subtitle).arrange(DOWN, buff=0.18)
-        title_group.move_to(UP*5.5)
-        self.play(Write(title), Write(subtitle), run_time=0.7)
-        self.wait(0.5)
-
-        # Problem statement
-        problem = VGroup(
-            MathTex(r"X_1, \ldots, X_n \sim \mathrm{Poisson}(\lambda)", font_size=32, color=WHITE),
-            MathTex(r"P(X=k) = \frac{\lambda^k e^{-\lambda}}{k!}", font_size=36, color=BLUE),
-            MathTex(r"\text{Test } H_0: \lambda = \lambda_0 \text{ vs } H_1: \lambda = \lambda_1 > \lambda_0", font_size=28, color=YELLOW),
-            MathTex(r"\text{Find rejection region for level } \alpha", font_size=24, color=WHITE)
-        ).arrange(DOWN, buff=0.13)
-        problem.next_to(title_group, DOWN, buff=0.32)
-        self.play(FadeIn(problem), run_time=1)
-        self.wait(0.5)
-
-        # Likelihoods
-        lik_lambda0 = MathTex(r"\text{Lik}(\lambda_0) = \prod_{i=1}^n \frac{\lambda_0^{x_i} e^{-\lambda_0}}{x_i!}", font_size=28)
-        lik_lambda1 = MathTex(r"\text{Lik}(\lambda_1) = \prod_{i=1}^n \frac{\lambda_1^{x_i} e^{-\lambda_1}}{x_i!}", font_size=28)
-        lik_lambda0.next_to(problem, DOWN, buff=0.18)
-        lik_lambda1.next_to(lik_lambda0, DOWN, buff=0.13)
-        self.play(Write(lik_lambda0), Write(lik_lambda1), run_time=1)
-        self.wait(0.5)
-
-        # Likelihood ratio
-        ratio = MathTex(r"\Lambda = \frac{\text{Lik}(\lambda_0)}{\text{Lik}(\lambda_1)}", font_size=32, color=YELLOW)
-        ratio.next_to(lik_lambda1, DOWN, buff=0.18)
-        self.play(Write(ratio), run_time=1)
-        self.wait(0.5)
-
-        # Substitute and simplify (split into two lines for layout)
-        step1 = MathTex(r"= \frac{\lambda_0^{\sum x_i} e^{-n\lambda_0}}{\lambda_1^{\sum x_i} e^{-n\lambda_1}}", font_size=28)
-        step2 = MathTex(r"= \left( \frac{\lambda_0}{\lambda_1} \right)^{\sum x_i} e^{n(\lambda_1-\lambda_0)}", font_size=28)
-        step1.next_to(ratio, DOWN, buff=0.13)
-        step2.next_to(step1, DOWN, buff=0.13)
-        self.play(Write(step1), run_time=1)
-        self.play(Write(step2), run_time=1)
-        self.wait(0.5)
-
-        # Monotonicity explanation
-        mono = VGroup(
-            MathTex(r"\Lambda \text{ is decreasing in } T = \sum x_i", font_size=22, color=BLUE),
-            MathTex(r"\text{We want the critical value } c: \text{ such that }\ P(\sum x_i > c | H_0) \leq \alpha", font_size=22, color=YELLOW)
-        ).arrange(DOWN, buff=0.13)
-        mono.next_to(step2, DOWN, buff=0.18)
-        self.play(Write(mono), run_time=1)
-        self.wait(0.7)
-
-        # Rejection region formula
-        rej = MathTex(r"P\left(\sum x_i > c\mid H_0\right) \leq \alpha", font_size=28, color=GREEN)
-        rej.next_to(mono, DOWN, buff=0.13)
-        self.play(Write(rej), run_time=1)
-        self.wait(0.7)
-
-        # Poisson tail sum
-        tail = MathTex(r"\sum_{t=0}^c \frac{e^{-n\lambda_0}(n\lambda_0)^t}{t!} \geq 1-\alpha", font_size=22, color=RED)
-        tail.next_to(rej, DOWN, buff=0.16)
-        box = SurroundingRectangle(tail, color=RED, buff=0.13)
-        self.play(Write(tail), Create(box), run_time=1)
-        self.wait(0.7)
-
-        # Ending Notes (smaller font, tighter spacing)
-        end_note1 = MathTex(r"\text{If exact equality isn't achievable,}", font_size=22)
-        end_note2 = MathTex(r"\text{choose the smallest $c$ such that the inequality holds.}", font_size=22)
-        end_note3 = MathTex(r"\text{This is the most powerful test under the Neyman-Pearson lemma.}", font_size=22)
-        end_notes = VGroup(end_note1, end_note2, end_note3).arrange(DOWN, buff=0.07, aligned_edge=LEFT)
-        end_notes.next_to(tail, DOWN, buff=0.5)
-        self.play(Write(end_notes), run_time=0.9)
-        self.wait(5)
-
-# manim -pqh Stats.py PoissonLikelihoodRatioTestReel
-
-# --- Exponential Likelihood Ratio Test Animation ---
-class ExponentialLikelihoodRatioTest(Scene):
-    def construct(self):
-
-        # Title
         title = Text("Likelihood Ratio Test", font_size=46, weight=BOLD)
-        subtitle = Text("Exponential Distribution", font_size=32, color=YELLOW)
+        subtitle = Text("Poisson Distribution", font_size=32, color=YELLOW)
         title_group = VGroup(title, subtitle).arrange(DOWN, buff=0.18)
         title_group.to_edge(UP, buff=0.45)
         self.play(Write(title), Write(subtitle), run_time=0.8)
@@ -2329,7 +2304,7 @@ class ExponentialLikelihoodRatioTest(Scene):
 
         # Substitute and simplify (split into two lines for layout)
         step1 = MathTex(r"= \frac{\theta_0^n e^{-\theta_0 \sum x_i}}{\theta_1^n e^{-\theta_1 \sum x_i}}", font_size=26)
-        step2 = MathTex(r"= \left( \frac{\theta_0}{\theta_1} \right)^n e^{-(\theta_0-\theta_1)\sum x_i}", font_size=26)
+        step2 = MathTex(r"= \left( \frac{\theta_0}{\theta_1} \right)^n e^{(\theta_1-\theta_0)\sum_{i=1}^n|x_i|}", font_size=26)
         step1.next_to(ratio, DOWN, buff=0.18)
         step2.next_to(step1, DOWN, buff=0.18)
         self.play(Write(step1), run_time=0.5)

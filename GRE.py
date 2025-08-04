@@ -20,6 +20,10 @@ config.frame_width = 9.0
 from manim import *
 import numpy as np
 
+
+class ChordProbability(Scene):
+    
+
 class RectangleGeo(Scene):
     def construct(self):
         # Set up vertical format for Instagram reels
