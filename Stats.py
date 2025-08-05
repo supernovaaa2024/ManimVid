@@ -515,7 +515,7 @@ class UniformDistributionReel(Scene):
         
         self.wait(2)
 
-# manim -pqh Stats.py CentralLimitTheoremMagic
+# manim -pql Stats.py CentralLimitTheoremMagic
 class CentralLimitTheoremMagic(Scene):
     def construct(self):
         # Configure for Instagram Reels (9:16 aspect ratio)
@@ -628,8 +628,7 @@ class CentralLimitTheoremMagic(Scene):
         # CLT Explanation
         # Position below assumptions to avoid overlap
         clt_explanation = Text(
-            "Sample means approach normal distribution", 
-            font_size=18, color=WHITE, font="Arial"
+            "The sampling distribution of the sample mean will approach a normal distribution \n as the sample size (n) increases \n regardless of the initial distribution.", font_size = 12
         )
         clt_explanation.next_to(assumptions, DOWN, buff=0.8)
         self.play(Write(clt_explanation), run_time=1.5)
@@ -825,14 +824,14 @@ class CentralLimitTheoremMagic(Scene):
         )
         
         # Position revelation text at very top after clearing everything
-        revelation_text = Text("🎯 NORMAL DISTRIBUTION!", font_size=22, color=GOLD, weight=BOLD, font="Arial")
+        revelation_text = Text("NORMAL DISTRIBUTION!", font_size=22, color=GOLD, weight=BOLD, font="Arial")
         revelation_text.move_to([0, 5.5, 0])  # Higher position since we cleared titles
         self.play(Write(revelation_text), run_time=1.5)
         
         # Key insights - mathematically precise, smaller font
         insights = [
             "• i.i.d. samples → Normal sample means",
-            "• Convergence rate depends on original shape", 
+            "• Convergence rate depends on the original shape", 
             "• Unbiased Estimator: E[X̄] = μ",
             "• Standard error: SD(X̄) = σ/√n"
         ]
