@@ -515,7 +515,7 @@ class UniformDistributionReel(Scene):
         
         self.wait(2)
 
-# manim -pql Stats.py CentralLimitTheoremMagic
+# manim -pqh Stats.py CentralLimitTheoremMagic
 class CentralLimitTheoremMagic(Scene):
     def construct(self):
         # Configure for Instagram Reels (9:16 aspect ratio)
@@ -625,10 +625,11 @@ class CentralLimitTheoremMagic(Scene):
             run_time=1
         )
         
-        # CLT Explanation
+        # CLT Explanation - Simple hook for the visual demonstration
         # Position below assumptions to avoid overlap
         clt_explanation = Text(
-            "The sampling distribution of the sample mean will approach a normal distribution \n as the sample size (n) increases \n regardless of the initial distribution.", font_size = 12
+            "Watch how ANY distribution becomes normal \nwhen we look at sample means!", 
+            font_size=14, color=WHITE, font="Arial"
         )
         clt_explanation.next_to(assumptions, DOWN, buff=0.8)
         self.play(Write(clt_explanation), run_time=1.5)
@@ -636,10 +637,10 @@ class CentralLimitTheoremMagic(Scene):
         # Set up side-by-side comparison
         # Left: Original distribution, Right: Sample means distribution
         left_title = Text("Original Distribution", font_size=16, color=RED, font="Arial")
-        left_title.move_to([-2.5, 2, 0])
+        left_title.move_to([-1.5, 1.5, 0])
         
         right_title = Text("Sample Means", font_size=16, color=BLUE, font="Arial")
-        right_title.move_to([2.5, 2, 0])
+        right_title.move_to([1.5, 1.5, 0])
         
         self.play(Write(left_title), Write(right_title), run_time=1)
         
@@ -651,7 +652,7 @@ class CentralLimitTheoremMagic(Scene):
             y_length=2,
             axis_config={"color": WHITE, "stroke_width": 1}
         )
-        left_axes.move_to([-2.5, 1, 0])
+        left_axes.move_to([-1.5, -0.5, 0])
         
         right_axes = Axes(
             x_range=[-2, 2, 1],
@@ -660,7 +661,7 @@ class CentralLimitTheoremMagic(Scene):
             y_length=2,
             axis_config={"color": WHITE, "stroke_width": 1}
         )
-        right_axes.move_to([2.5, 1, 0])
+        right_axes.move_to([1.5, -0.5, 0])
         
         self.play(Create(left_axes), Create(right_axes), run_time=1)
         
@@ -830,10 +831,10 @@ class CentralLimitTheoremMagic(Scene):
         
         # Key insights - mathematically precise, smaller font
         insights = [
-            "• i.i.d. samples → Normal sample means",
-            "• Convergence rate depends on the original shape", 
-            "• Unbiased Estimator: E[X̄] = μ",
-            "• Standard error: SD(X̄) = σ/√n"
+            "• Exact: X̄ ~ N(μ, σ²/n) if Xi ~ N(μ, σ²)",
+            "• Asymptotic: √n(X̄ - μ) →d N(0, σ²)", 
+            "• Unbiased: E[X̄] = μ, Var(X̄) = σ²/n",
+            "• Convergence rate: O(n^(-1/2)) by Berry-Esseen"
         ]
         
         insight_group = VGroup()
@@ -884,7 +885,89 @@ class CentralLimitTheoremMagic(Scene):
             run_time=0.8
         )
         
-        self.wait(1.5)
+        self.wait(1)
+        
+        # Clear everything for rigorous mathematical formulation
+        self.play(
+            FadeOut(VGroup(revelation_text, insight_group, formula_group)),
+            run_time=1
+        )
+        
+        # Now present the rigorous mathematical formulation
+        # Title for the rigorous section
+        sampling_title = Text("Rigorous Mathematical Framework", font_size=28, color=YELLOW, weight=BOLD, font="Arial")
+        sampling_title.move_to([0, 5, 0])
+        
+        # Setup conditions
+        setup_conditions = MathTex(
+            r"X_1,\ldots,X_n \text{ i.i.d. with } \mu = \mathbb{E}[X_i], \; 0 < \sigma^2 = \mathrm{Var}(X_i) < \infty",
+            font_size=18
+        )
+        setup_conditions.next_to(sampling_title, DOWN, buff=0.4)
+        
+        # 1. Unbiasedness
+        unbiasedness_title = Text("1. Unbiasedness", font_size=20, color=GREEN, weight=BOLD, font="Arial")
+        unbiasedness_formula = MathTex(
+            r"\mathbb{E}[\bar{X}] = \mu, \quad \mathrm{Var}(\bar{X}) = \frac{\sigma^2}{n} \Longrightarrow \mathrm{SE}(\bar{X}) = \frac{\sigma}{\sqrt{n}}",
+            font_size=16
+        )
+        
+        # 2. Exact Normality
+        exact_title = Text("2. Exact Normality (Gaussian case)", font_size=20, color=BLUE, weight=BOLD, font="Arial")
+        exact_formula = MathTex(
+            r"\text{If } X_i \sim N(\mu,\sigma^2), \text{ then for every } n: \quad \bar{X} \sim N\left(\mu, \frac{\sigma^2}{n}\right)",
+            font_size=16
+        )
+        
+        # 3. Central Limit Theorem
+        clt_title = Text("3. Central Limit Theorem (general case)", font_size=20, color=PURPLE, weight=BOLD, font="Arial")
+        clt_formula1 = MathTex(
+            r"\text{As } n \to \infty: \quad \sqrt{n}(\bar{X} - \mu) \xrightarrow{d} N(0, \sigma^2)",
+            font_size=16
+        )
+        clt_equiv = MathTex(
+            r"\text{equivalent to: } \bar{X} \approx N\left(\mu, \frac{\sigma^2}{n}\right) \text{ for large } n",
+            font_size=16
+        )
+        
+        # 4. Rate of convergence
+        rate_title = Text("4. Rate of convergence (Berry–Esseen)", font_size=20, color=ORANGE, weight=BOLD, font="Arial")
+        rate_formula = MathTex(
+            r"\text{If } \mathbb{E}[|X_i-\mu|^3] < \infty: \quad \sup_x |F_{\sqrt{n}(\bar{X}-\mu)/\sigma}(x) - \Phi(x)| = O(n^{-1/2})",
+            font_size=14
+        )
+        
+        # Arrange all components
+        rigorous_content = VGroup(
+            sampling_title,
+            setup_conditions,
+            unbiasedness_title,
+            unbiasedness_formula,
+            exact_title,
+            exact_formula,
+            clt_title,
+            clt_formula1,
+            clt_equiv,
+            rate_title,
+            rate_formula
+        )
+        rigorous_content.arrange(DOWN, buff=0.2, aligned_edge=LEFT)
+        rigorous_content.move_to([0, 1, 0])
+        
+        # Animate the rigorous formulation
+        self.play(Write(sampling_title), run_time=1.5)
+        self.play(Write(setup_conditions), run_time=2)
+        self.play(Write(unbiasedness_title), run_time=1)
+        self.play(Write(unbiasedness_formula), run_time=1.5)
+        self.play(Write(exact_title), run_time=1)
+        self.play(Write(exact_formula), run_time=1.5)
+        self.play(Write(clt_title), run_time=1)
+        self.play(Write(clt_formula1), run_time=1.5)
+        self.play(Write(clt_equiv), run_time=1.2)
+        self.play(Write(rate_title), run_time=1)
+        self.play(Write(rate_formula), run_time=2)
+        
+        self.wait(3)
 
 # manim -pql Stats.py 
 # 3. Exponential Distribution
